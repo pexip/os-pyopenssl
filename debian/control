@@ -1,15 +1,17 @@
 Source: pyopenssl
 Section: python
 Priority: optional
-Maintainer: Ubuntu Developers <ubuntu-devel-discuss@lists.ubuntu.com>
+Maintainer: Pexip AS <packaging@pexip.com>
+XSBC-Pexip-Original-Maintainer: Ubuntu Developers <ubuntu-devel-discuss@lists.ubuntu.com>
 XSBC-Original-Maintainer: Debian Python Modules Team <python-modules-team@lists.alioth.debian.org>
-Uploaders: Sandro Tosi <morph@debian.org>
+XSBC-Pexip-Original-Uploaders: Sandro Tosi <morph@debian.org>
 Build-Depends: debhelper (>= 5.0.37.2), python-all-dev (>= 2.6.6-3~), python-all-dbg (>= 2.5.4-1~), libssl-dev (>= 0.9.8), tex4ht, w3m, texlive-latex-base, texlive-latex-recommended, openssl
 Standards-Version: 3.9.2
 Homepage: http://launchpad.net/pyopenssl
 Vcs-Svn: svn://svn.debian.org/python-modules/packages/pyopenssl/trunk/
 Vcs-Browser: http://svn.debian.org/viewsvn/python-modules/packages/pyopenssl/trunk/
 XS-Python-Version: all
+XS-Pexip-Upstream: http://archive.ubuntu.com/ubuntu/ precise
 
 Package: python-openssl
 Architecture: any
