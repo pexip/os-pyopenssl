@@ -1,32 +1,109 @@
-pyopenssl (0.12-1ubuntu2.1) precise-security; urgency=low
+pyopenssl (0.14-1) unstable; urgency=medium
 
-  * SECURITY UPDATE: incorrect ssl cert validation via NUL byte in
-    subjectAltName
-    - debian/patches/CVE-2013-4314.patch: fix leak in OpenSSL/crypto/x509.c,
-      properly handle subjectAltName in OpenSSL/crypto/x509ext.c, added
-      tests to OpenSSL/test/test_crypto.py.
-    - CVE-2013-4314
-  * debian/patches/remove_sslv2_test.patch: fix test suite failure by
-    removing SSLv2 in test_method as openssl in precise doesn't enable it.
+  * New upstream release; Closes: #751144
+  * debian/control
+    - update Homepage field; thanks to Slavko for the report; Closes: #751893
+    - update b-d as per new upstream code
+    - packages now are Arch:all
+  * debian/copyright
+    - switch to DEP-5 format
+    - updated to new upsteam release
+  * debian/patches/*
+    - removed no longer applyable patches, refresh the remaining one
+  * debian/README.source
+    - removed, long outdated
+  * Build and install doc with Sphinx
+  * debian/{control, *-dbg.install}
+    - removed dbg package, no longer created
+  * debian/patches/bbff8b97da488d19d3a26f6eda5f83fc88ad430c.patch
+    - fixes test_wantWriteError error
+  * debian/rules
+    - run test correctly for a pure Python module
 
- -- Marc Deslauriers <marc.deslauriers@ubuntu.com>  Mon, 23 Sep 2013 10:00:40 -0400
+ -- Sandro Tosi <morph@debian.org>  Mon, 18 Aug 2014 20:05:04 +0100
 
-pyopenssl (0.12-1ubuntu2) precise; urgency=low
+pyopenssl (0.13.1-2) unstable; urgency=medium
 
-  * Rebuild to drop python2.6 dependencies.
+  * debian/control
+    - add texlive-fonts-recommended to b-d, fixing a FTBFS; thanks to Daniel
+      Schepler for the report and Hideki Yamane for the patch; Closes: #739076
+    - switch me to Maintainer (team to Uploaders)
+  * Switch to dh_python2
+  * debian/{compat, control}
+    - bump compat to 9
 
- -- Matthias Klose <doko@ubuntu.com>  Sat, 31 Dec 2011 02:08:06 +0000
+ -- Sandro Tosi <morph@debian.org>  Fri, 21 Feb 2014 20:43:50 +0100
 
-pyopenssl (0.12-1ubuntu1) oneiric; urgency=low
+pyopenssl (0.13.1-1) unstable; urgency=low
 
-  * Merge from debian unstable.  Remaining changes:
-    - debian/rules: change dh_pysupport to dh_python2.
-    - debian/control: 
-      + Removed python-support from Build-Depends,
-      + Bump build-depends for python-all-dev to >= 2.6.6-3~
-  * drop debian/patches/30_py27_memoryview.patch, fixed upstream
+  [ Jakub Wilk ]
+  * Use canonical URIs for Vcs-* fields.
+ 
+  [ Sandro Tosi ]
+  * New upstream release
+    - debian/patches/CVE-2013-4314.patch removed, merged upstream
+  * Acknowledge NMU; thanks Salvatore Bonaccorso; Closes: #722055
+  * debian/patches/bts733366_make_symbol_optional.patch
+    - fix a FTBFS by making SSL_OP_MSIE_SSLV2_RSA_PADDING optional; thanks to
+      David Suárez for the report and to Mehdi Abaakouk for the patch;
+      Closes: #733366
+  * debian/control
+    - bump Standards-Version to 3.9.5 (no changes needed)
+  * debian/copyright
+    - bump packaging copyright years
 
- -- Michael Vogt <michael.vogt@ubuntu.com>  Fri, 17 Jun 2011 10:26:19 +0200
+ -- Sandro Tosi <morph@debian.org>  Sun, 12 Jan 2014 22:15:57 +0100
+
+pyopenssl (0.13-3.1) experimental; urgency=low
+
+  * Non-maintainer upload.
+  * Add CVE-2013-4314.patch patch.
+    CVE-2013-4314: Fix hostname check bypassing vulnerability with server
+    certificates that have a null byte in the subjectAltName. (Closes: #722055)
+
+ -- Salvatore Bonaccorso <carnil@debian.org>  Sun, 15 Sep 2013 16:59:07 +0200
+
+pyopenssl (0.13-3) experimental; urgency=low
+
+  * debian/{control, rules}
+    - migrate to dh sequences, implicitly Closes: #675414
+
+ -- Sandro Tosi <morph@debian.org>  Wed, 29 Aug 2012 22:45:02 +0200
+
+pyopenssl (0.13-2) unstable; urgency=low
+
+  [ Barry Warsaw ]
+  * Enable the Python 3 version of the package; Closes: #669301
+
+  [ Sandro Tosi ]
+  * Fix several omissions for py3k packages introduction
+  * debian/control
+    - bump Standards-Version to 3.9.3 (no changes needed)
+  * debian/rules
+    - remove leftover from build process, so the package can be built twice in a
+      row; thanks to Jakub Wilk for the report; Closes: #671191
+
+ -- Sandro Tosi <morph@debian.org>  Sat, 05 May 2012 17:30:52 +0200
+
+pyopenssl (0.13-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Sandro Tosi <morph@debian.org>  Sun, 11 Sep 2011 16:46:29 +0200
+
+pyopenssl (0.13~a1-1) unstable; urgency=low
+
+  * New upstream (alpha) release
+  * debian/patches/support_openssl_1.0
+    - removed, fix upstream
+  * debian/patches/disable_test_set_default_verify_paths.patch
+    - disable a test trying to connect to the web
+  * debian/rules
+    - fix build* targets
+  * debian/control
+    - drop Provides and XB-P-V fields from bin pkg
+
+ -- Sandro Tosi <morph@debian.org>  Mon, 15 Aug 2011 18:44:39 +0200
 
 pyopenssl (0.12-1) unstable; urgency=low
 
@@ -70,28 +147,6 @@ pyopenssl (0.11~a2-1) experimental; urgency=low
     - added 'openssl' to b-d, needed to run unit tests
 
  -- Sandro Tosi <morph@debian.org>  Mon, 25 Oct 2010 21:11:45 +0200
-
-pyopenssl (0.10-1ubuntu3) natty; urgency=low
-
-  * Add upstream patch so that sendall() uses a memoryview, which is
-    required for Python 2.7 compatibility.  Patch given in upstream bug
-    report <http://launchpad.net/bugs/686804>.  (LP: #758037)
-
- -- Barry Warsaw <barry@ubuntu.com>  Wed, 13 Apr 2011 08:39:18 -0400
-
-pyopenssl (0.10-1ubuntu2) natty; urgency=low
-
-  * No-change rebuild to prefer python2.7.
-
- -- Martin Pitt <martin.pitt@ubuntu.com>  Wed, 22 Dec 2010 09:39:55 +0100
-
-pyopenssl (0.10-1ubuntu1) natty; urgency=low
-
-  * Rebuild with Python2.7.
-  * debian/rules: change dh_pysupport to dh_python2.
-  * debian/control: Removed python-support from Build-Depends.
-
- -- Daniel Holbach <daniel.holbach@ubuntu.com>  Mon, 29 Nov 2010 09:39:23 +0100
 
 pyopenssl (0.10-1) unstable; urgency=low
 
@@ -461,4 +516,3 @@ pyopenssl (0.1-1) unstable; urgency=low
   * Initial version.
 
  -- Anders Hammarquist <iko@strakt.com>  Mon, 23 Jul 2001 15:17:38 +0200
-

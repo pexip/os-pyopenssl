@@ -1,4 +1,2 @@
-10_fix_doc_buildsystem.patch
-support_openssl_1.0
-CVE-2013-4314.patch
-remove_sslv2_test.patch
+disable_test_set_default_verify_paths.patch
+bbff8b97da488d19d3a26f6eda5f83fc88ad430c.patch
