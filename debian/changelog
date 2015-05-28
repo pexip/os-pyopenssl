@@ -1,3 +1,9 @@
+pyopenssl (0.12-1ubuntu2.1pexip2) pexip; urgency=low
+
+  * Add methods to set temporary (EC)DH parameters
+
+ -- John-Mark Bell <jmb@pexip.com>  Thu, 28 May 2015 11:43:51 +0100
+
 pyopenssl (0.12-1ubuntu2.1pexip1) pexip; urgency=low
 
   * Prepare Pexip packaging
