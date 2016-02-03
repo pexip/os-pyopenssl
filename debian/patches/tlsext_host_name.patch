@@ -1,0 +1,42 @@
+diff --git a/OpenSSL/ssl/connection.c b/OpenSSL/ssl/connection.c
+index bef8c2f..d3ac587 100755
+--- a/OpenSSL/ssl/connection.c
++++ b/OpenSSL/ssl/connection.c
+@@ -672,6 +672,29 @@ ssl_Connection_set_connect_state(ssl_ConnectionObj *self, PyObject *args)
+     return Py_None;
+ }
+ 
++static char ssl_Connection_set_tlsext_host_name_doc[] = "\n\
++Set the TLS host name indication extension\n\
++\n\
++@param hostname: String containing host name\n\
++@return: None\n\
++";
++static PyObject *
++ssl_Connection_set_tlsext_host_name(ssl_ConnectionObj *self, PyObject *args)
++{
++    char *hostname;
++
++    if (!PyArg_ParseTuple(args, BYTESTRING_FMT ":set_tlsext_host_name", &hostname))
++        return NULL;
++
++    if (!SSL_set_tlsext_host_name(self->ssl, hostname)) {
++        exception_from_error_queue(ssl_Error);
++        return NULL;
++    }
++
++    Py_INCREF(Py_None);
++    return Py_None;
++}
++
+ static char ssl_Connection_connect_doc[] = "\n\
+ Connect to remote host and set up client-side SSL\n\
+ \n\
+@@ -1179,6 +1202,7 @@ static PyMethodDef ssl_Connection_methods[] =
+     ADD_METHOD(want_write),
+     ADD_METHOD(set_accept_state),
+     ADD_METHOD(set_connect_state),
++    ADD_METHOD(set_tlsext_host_name),
+     { NULL, NULL }
+ };
+ #undef ADD_ALIAS

@@ -1,3 +1,9 @@
+pyopenssl (0.12-1ubuntu2.1pexip3) pexip; urgency=low
+
+  * Add method to set SNI
+
+ -- John-Mark Bell <jmb@pexip.com>  Wed, 03 Feb 2016 18:46:23 +0000
+
 pyopenssl (0.12-1ubuntu2.1pexip2) pexip; urgency=low
 
   * Add methods to set temporary (EC)DH parameters
