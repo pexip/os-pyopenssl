@@ -6,130 +6,72 @@
 .. py:module:: OpenSSL.crypto
    :synopsis: Generic cryptographic module
 
+Elliptic curves
+---------------
 
-.. py:data:: X509Type
+.. py:function:: get_elliptic_curves
 
-    See :py:class:`X509`.
+    Return a set of objects representing the elliptic curves supported in the
+    OpenSSL build in use.
 
+    The curve objects have a :py:class:`unicode` ``name`` attribute by which
+    they identify themselves.
 
-.. py:class:: X509()
-
-    A class representing X.509 certificates.
-
-
-.. py:data:: X509NameType
-
-    See :py:class:`X509Name`.
-
-
-.. py:class:: X509Name(x509name)
-
-    A class representing X.509 Distinguished Names.
-
-    This constructor creates a copy of *x509name* which should be an
-    instance of :py:class:`X509Name`.
+    The curve objects are useful as values for the argument accepted by
+    :py:meth:`Context.set_tmp_ecdh` to specify which elliptical curve should be
+    used for ECDHE key exchange.
 
 
-.. py:data:: X509ReqType
+.. py:function:: get_elliptic_curve(name)
 
-    See :py:class:`X509Req`.
+    Return a single curve object selected by *name*.
 
+    See :py:func:`get_elliptic_curves` for information about curve objects.
 
-.. py:class:: X509Req()
-
-    A class representing X.509 certificate requests.
-
-
-.. py:data:: X509StoreType
-
-    A Python type object representing the X509Store object type.
+    If the named curve is not supported then :py:class:`ValueError` is raised.
 
 
-.. py:data:: PKeyType
+Serialization and deserialization
+---------------------------------
 
-    See :py:class:`PKey`.
-
-
-.. py:class:: PKey()
-
-    A class representing DSA or RSA keys.
-
-
-.. py:data:: PKCS7Type
-
-    A Python type object representing the PKCS7 object type.
-
-
-.. py:data:: PKCS12Type
-
-    A Python type object representing the PKCS12 object type.
-
-
-.. py:data:: X509ExtensionType
-
-    See :py:class:`X509Extension`.
-
-
-.. py:class:: X509Extension(typename, critical, value[, subject][, issuer])
-
-    A class representing an X.509 v3 certificate extensions.  See
-    http://openssl.org/docs/apps/x509v3_config.html#STANDARD_EXTENSIONS for
-    *typename* strings and their options.  Optional parameters *subject* and
-    *issuer* must be X509 objects.
-
-
-.. py:data:: NetscapeSPKIType
-
-    See :py:class:`NetscapeSPKI`.
-
-
-.. py:class:: NetscapeSPKI([enc])
-
-    A class representing Netscape SPKI objects.
-
-    If the *enc* argument is present, it should be a base64-encoded string
-    representing a NetscapeSPKI object, as returned by the :py:meth:`b64_encode`
-    method.
-
-
-.. py:class:: CRL()
-
-    A class representing Certifcate Revocation List objects.
-
-
-.. py:class:: Revoked()
-
-    A class representing Revocation objects of CRL.
-
+The following serialization functions take one of these constants to determine the format.
 
 .. py:data:: FILETYPE_PEM
-             FILETYPE_ASN1
 
-    File type constants.
+:data:`FILETYPE_PEM` serializes data to a Base64-encoded encoded representation of the underlying ASN.1 data structure. This representation includes delimiters that define what data structure is contained within the Base64-encoded block: for example, for a certificate, the delimiters are ``-----BEGIN CERTIFICATE-----`` and ``-----END CERTIFICATE-----``.
 
+.. py:data:: FILETYPE_ASN1
 
-.. py:data:: TYPE_RSA
-             TYPE_DSA
+:data:`FILETYPE_ASN1` serializes data to the underlying ASN.1 data structure. The format used by :data:`FILETYPE_ASN1` is also sometimes referred to as DER.
 
-    Key type constants.
-
-
-.. py:exception:: Error
-
-    Generic exception used in the :py:mod:`.crypto` module.
-
+Certificates
+~~~~~~~~~~~~
 
 .. py:function:: dump_certificate(type, cert)
 
     Dump the certificate *cert* into a buffer string encoded with the type
     *type*.
 
+.. py:function:: load_certificate(type, buffer)
+
+    Load a certificate (X509) from the string *buffer* encoded with the
+    type *type*.
+
+Certificate signing requests
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. py:function:: dump_certificate_request(type, req)
 
     Dump the certificate request *req* into a buffer string encoded with the
     type *type*.
 
+.. py:function:: load_certificate_request(type, buffer)
+
+    Load a certificate request (X509Req) from the string *buffer* encoded with
+    the type *type*.
+
+Private keys
+~~~~~~~~~~~~
 
 .. py:function:: dump_privatekey(type, pkey[, cipher, passphrase])
 
@@ -140,19 +82,6 @@
     *passphrase* must be either a string or a callback for providing the
     pass phrase.
 
-
-.. py:function:: load_certificate(type, buffer)
-
-    Load a certificate (X509) from the string *buffer* encoded with the
-    type *type*.
-
-
-.. py:function:: load_certificate_request(type, buffer)
-
-    Load a certificate request (X509Req) from the string *buffer* encoded with
-    the type *type*.
-
-
 .. py:function:: load_privatekey(type, buffer[, passphrase])
 
     Load a private key (PKey) from the string *buffer* encoded with the type
@@ -162,6 +91,17 @@
     *passphrase* must be either a string or a callback for providing the pass
     phrase.
 
+Public keys
+~~~~~~~~~~~
+
+.. autofunction:: dump_publickey
+
+.. autofunction:: load_publickey
+
+Certificate revocation lists
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: dump_crl
 
 .. py:function:: load_crl(type, buffer)
 
@@ -172,7 +112,9 @@
 
 .. py:function:: load_pkcs7_data(type, buffer)
 
-    Load pkcs7 data from the string *buffer* encoded with the type *type*.
+    Load pkcs7 data from the string *buffer* encoded with the type
+    *type*. The type *type* must either :py:const:`FILETYPE_PEM` or
+    :py:const:`FILETYPE_ASN1`).
 
 
 .. py:function:: load_pkcs12(buffer[, passphrase])
@@ -183,6 +125,8 @@
 
     See also the man page for the C function :py:func:`PKCS12_parse`.
 
+Signing and verifying signatures
+--------------------------------
 
 .. py:function:: sign(key, data, digest)
 
@@ -213,321 +157,67 @@
 X509 objects
 ------------
 
-X509 objects have the following methods:
-
-.. py:method:: X509.get_issuer()
-
-    Return an X509Name object representing the issuer of the certificate.
-
-
-.. py:method:: X509.get_pubkey()
-
-    Return a :py:class:`PKey` object representing the public key of the certificate.
-
-
-.. py:method:: X509.get_serial_number()
-
-    Return the certificate serial number.
-
-
-.. py:method:: X509.get_signature_algorithm()
-
-    Return the signature algorithm used in the certificate.  If the algorithm is
-    undefined, raise :py:data:`ValueError`.
-
-    ..versionadded:: 0.13
-
-
-.. py:method:: X509.get_subject()
-
-    Return an :py:class:`X509Name` object representing the subject of the certificate.
-
-
-.. py:method:: X509.get_version()
-
-    Return the certificate version.
-
-
-.. py:method:: X509.get_notBefore()
-
-    Return a string giving the time before which the certificate is not valid.  The
-    string is formatted as an ASN1 GENERALIZEDTIME::
-
-        YYYYMMDDhhmmssZ
-        YYYYMMDDhhmmss+hhmm
-        YYYYMMDDhhmmss-hhmm
-
-    If no value exists for this field, :py:data:`None` is returned.
-
-
-.. py:method:: X509.get_notAfter()
-
-    Return a string giving the time after which the certificate is not valid.  The
-    string is formatted as an ASN1 GENERALIZEDTIME::
-
-        YYYYMMDDhhmmssZ
-        YYYYMMDDhhmmss+hhmm
-        YYYYMMDDhhmmss-hhmm
-
-    If no value exists for this field, :py:data:`None` is returned.
-
-
-.. py:method:: X509.set_notBefore(when)
-
-    Change the time before which the certificate is not valid.  *when* is a
-    string formatted as an ASN1 GENERALIZEDTIME::
-
-        YYYYMMDDhhmmssZ
-        YYYYMMDDhhmmss+hhmm
-        YYYYMMDDhhmmss-hhmm
-
-
-.. py:method:: X509.set_notAfter(when)
-
-    Change the time after which the certificate is not valid.  *when* is a
-    string formatted as an ASN1 GENERALIZEDTIME::
-
-        YYYYMMDDhhmmssZ
-        YYYYMMDDhhmmss+hhmm
-        YYYYMMDDhhmmss-hhmm
-
-
-
-.. py:method:: X509.gmtime_adj_notBefore(time)
-
-    Adjust the timestamp (in GMT) when the certificate starts being valid.
-
-
-.. py:method:: X509.gmtime_adj_notAfter(time)
-
-    Adjust the timestamp (in GMT) when the certificate stops being valid.
-
-
-.. py:method:: X509.has_expired()
-
-    Checks the certificate's time stamp against current time. Returns true if the
-    certificate has expired and false otherwise.
-
-
-.. py:method:: X509.set_issuer(issuer)
-
-    Set the issuer of the certificate to *issuer*.
-
-
-.. py:method:: X509.set_pubkey(pkey)
-
-    Set the public key of the certificate to *pkey*.
-
-
-.. py:method:: X509.set_serial_number(serialno)
-
-    Set the serial number of the certificate to *serialno*.
-
-
-.. py:method:: X509.set_subject(subject)
-
-    Set the subject of the certificate to *subject*.
-
-
-.. py:method:: X509.set_version(version)
-
-    Set the certificate version to *version*.
-
-
-.. py:method:: X509.sign(pkey, digest)
-
-    Sign the certificate, using the key *pkey* and the message digest algorithm
-    identified by the string *digest*.
-
-
-.. py:method:: X509.subject_name_hash()
-
-    Return the hash of the certificate subject.
-
-.. py:method:: X509.digest(digest_name)
-
-    Return a digest of the certificate, using the *digest_name* method.
-    *digest_name* must be a string describing a digest algorithm supported
-    by OpenSSL (by EVP_get_digestbyname, specifically).  For example,
-    :py:const:`"md5"` or :py:const:`"sha1"`.
-
-
-.. py:method:: X509.add_extensions(extensions)
-
-    Add the extensions in the sequence *extensions* to the certificate.
-
-
-.. py:method:: X509.get_extension_count()
-
-    Return the number of extensions on this certificate.
-
-    .. versionadded:: 0.12
-
-
-.. py:method:: X509.get_extension(index)
-
-    Retrieve the extension on this certificate at the given index.
-
-    Extensions on a certificate are kept in order.  The index parameter selects
-    which extension will be returned.  The returned object will be an
-    :py:class:`X509Extension` instance.
-
-    .. versionadded:: 0.12
-
+.. autoclass:: X509
+               :members:
 
 .. _openssl-x509name:
 
 X509Name objects
 ----------------
 
-X509Name objects have the following methods:
-
-.. py:method:: X509Name.hash()
-
-    Return an integer giving the first four bytes of the MD5 digest of the DER
-    representation of the name.
-
-
-.. py:method:: X509Name.der()
-
-    Return a string giving the DER representation of the name.
-
-
-.. py:method:: X509Name.get_components()
-
-    Return a list of two-tuples of strings giving the components of the name.
-
-
-X509Name objects have the following members:
-
-.. py:attribute:: X509Name.countryName
-
-    The country of the entity. :py:attr:`C` may be used as an alias for
-    :py:attr:`countryName`.
-
-
-.. py:attribute:: X509Name.stateOrProvinceName
-
-    The state or province of the entity. :py:attr:`ST` may be used as an alias for
-    :py:attr:`stateOrProvinceName`.
-
-
-.. py:attribute:: X509Name.localityName
-
-    The locality of the entity. :py:attr:`L` may be used as an alias for
-    :py:attr:`localityName`.
-
-
-.. py:attribute:: X509Name.organizationName
-
-    The organization name of the entity. :py:attr:`O` may be used as an alias for
-    :py:attr:`organizationName`.
-
-
-.. py:attribute:: X509Name.organizationalUnitName
-
-    The organizational unit of the entity. :py:attr:`OU` may be used as an alias for
-    :py:attr:`organizationalUnitName`.
-
-
-.. py:attribute:: X509Name.commonName
-
-    The common name of the entity. :py:attr:`CN` may be used as an alias for
-    :py:attr:`commonName`.
-
-
-.. py:attribute:: X509Name.emailAddress
-
-    The e-mail address of the entity.
-
+.. autoclass:: X509Name
+               :members:
+               :special-members:
+               :exclude-members: __repr__, __getattr__, __weakref__
 
 .. _openssl-x509req:
 
 X509Req objects
 ---------------
 
-X509Req objects have the following methods:
-
-.. py:method:: X509Req.get_pubkey()
-
-    Return a :py:class:`PKey` object representing the public key of the certificate request.
-
-
-.. py:method:: X509Req.get_subject()
-
-    Return an :py:class:`X509Name` object representing the subject of the certificate.
-
-
-.. py:method:: X509Req.set_pubkey(pkey)
-
-    Set the public key of the certificate request to *pkey*.
-
-
-.. py:method:: X509Req.sign(pkey, digest)
-
-    Sign the certificate request, using the key *pkey* and the message digest
-    algorithm identified by the string *digest*.
-
-
-.. py:method:: X509Req.verify(pkey)
-
-    Verify a certificate request using the public key *pkey*.
-
-
-.. py:method:: X509Req.set_version(version)
-
-    Set the version (RFC 2459, 4.1.2.1) of the certificate request to
-    *version*.
-
-
-.. py:method:: X509Req.get_version()
-
-    Get the version (RFC 2459, 4.1.2.1) of the certificate request.
-
+.. autoclass:: X509Req
+               :members:
+               :special-members:
+               :exclude-members: __weakref__
 
 .. _openssl-x509store:
 
 X509Store objects
 -----------------
 
-The X509Store object has currently just one method:
+.. autoclass:: X509Store
+               :members:
 
-.. py:method:: X509Store.add_cert(cert)
+.. _openssl-x509storecontexterror:
 
-    Add the certificate *cert* to the certificate store.
+X509StoreContextError objects
+-----------------------------
 
+.. autoclass:: X509StoreContextError
+               :members:
+
+.. _openssl-x509storecontext:
+
+X509StoreContext objects
+------------------------
+
+.. autoclass:: X509StoreContext
+               :members:
 
 .. _openssl-pkey:
 
 PKey objects
 ------------
 
-The PKey object has the following methods:
-
-.. py:method:: PKey.bits()
-
-    Return the number of bits of the key.
-
-
-.. py:method:: PKey.generate_key(type, bits)
-
-    Generate a public/private key pair of the type *type* (one of
-    :py:const:`TYPE_RSA` and :py:const:`TYPE_DSA`) with the size *bits*.
-
-
-.. py:method:: PKey.type()
-
-    Return the type of the key.
-
-
-.. py:method:: PKey.check()
-
-    Check the consistency of this key, returning True if it is consistent and
-    raising an exception otherwise.  This is only valid for RSA keys.  See the
-    OpenSSL RSA_check_key man page for further limitations.
-
+.. autoclass:: PKey
+               :members:
 
 .. _openssl-pkcs7:
+
+.. py:data:: TYPE_RSA
+             TYPE_DSA
+
+    Key type constants.
 
 PKCS7 objects
 -------------
@@ -538,216 +228,114 @@ PKCS7 objects have the following methods:
 
     FIXME
 
-
 .. py:method:: PKCS7.type_is_enveloped()
 
     FIXME
-
 
 .. py:method:: PKCS7.type_is_signedAndEnveloped()
 
     FIXME
 
-
 .. py:method:: PKCS7.type_is_data()
 
     FIXME
 
-
 .. py:method:: PKCS7.get_type_name()
 
     Get the type name of the PKCS7.
-
 
 .. _openssl-pkcs12:
 
 PKCS12 objects
 --------------
 
-PKCS12 objects have the following methods:
-
-.. py:method:: PKCS12.export([passphrase=None][, iter=2048][, maciter=1])
-
-    Returns a PKCS12 object as a string.
-
-    The optional *passphrase* must be a string not a callback.
-
-    See also the man page for the C function :py:func:`PKCS12_create`.
-
-
-.. py:method:: PKCS12.get_ca_certificates()
-
-    Return CA certificates within the PKCS12 object as a tuple. Returns
-    :py:const:`None` if no CA certificates are present.
-
-
-.. py:method:: PKCS12.get_certificate()
-
-    Return certificate portion of the PKCS12 structure.
-
-
-.. py:method:: PKCS12.get_friendlyname()
-
-    Return friendlyName portion of the PKCS12 structure.
-
-
-.. py:method:: PKCS12.get_privatekey()
-
-    Return private key portion of the PKCS12 structure
-
-
-.. py:method:: PKCS12.set_ca_certificates(cacerts)
-
-    Replace or set the CA certificates within the PKCS12 object with the sequence *cacerts*.
-
-    Set *cacerts* to :py:const:`None` to remove all CA certificates.
-
-
-.. py:method:: PKCS12.set_certificate(cert)
-
-    Replace or set the certificate portion of the PKCS12 structure.
-
-
-.. py:method:: PKCS12.set_friendlyname(name)
-
-    Replace or set the friendlyName portion of the PKCS12 structure.
-
-
-.. py:method:: PKCS12.set_privatekey(pkey)
-
-    Replace or set private key portion of the PKCS12 structure
-
+.. autoclass:: PKCS12
+               :members:
 
 .. _openssl-509ext:
 
 X509Extension objects
 ---------------------
 
-X509Extension objects have several methods:
-
-.. py:method:: X509Extension.get_critical()
-
-    Return the critical field of the extension object.
-
-
-.. py:method:: X509Extension.get_short_name()
-
-    Retrieve the short descriptive name for this extension.
-
-    The result is a byte string like :py:const:`basicConstraints`.
-
-    .. versionadded:: 0.12
-
-
-.. py:method:: X509Extension.get_data()
-
-    Retrieve the data for this extension.
-
-    The result is the ASN.1 encoded form of the extension data as a byte string.
-
-    .. versionadded:: 0.12
-
+.. autoclass:: X509Extension
+               :members:
+               :special-members:
+               :exclude-members: __weakref__
 
 .. _openssl-netscape-spki:
 
 NetscapeSPKI objects
 --------------------
 
-NetscapeSPKI objects have the following methods:
-
-.. py:method:: NetscapeSPKI.b64_encode()
-
-    Return a base64-encoded string representation of the object.
-
-
-.. py:method:: NetscapeSPKI.get_pubkey()
-
-    Return the public key of object.
-
-
-.. py:method:: NetscapeSPKI.set_pubkey(key)
-
-    Set the public key of the object to *key*.
-
-
-.. py:method:: NetscapeSPKI.sign(key, digest_name)
-
-    Sign the NetscapeSPKI object using the given *key* and *digest_name*.
-    *digest_name* must be a string describing a digest algorithm supported by
-    OpenSSL (by EVP_get_digestbyname, specifically).  For example,
-    :py:const:`"md5"` or :py:const:`"sha1"`.
-
-
-.. py:method:: NetscapeSPKI.verify(key)
-
-    Verify the NetscapeSPKI object using the given *key*.
-
+.. autoclass:: NetscapeSPKI
+               :members:
+               :special-members:
+               :exclude-members: __weakref__
 
 .. _crl:
 
 CRL objects
 -----------
 
-CRL objects have the following methods:
-
-.. py:method:: CRL.add_revoked(revoked)
-
-    Add a Revoked object to the CRL, by value not reference.
-
-
-.. py:method:: CRL.export(cert, key[, type=FILETYPE_PEM][, days=100])
-
-    Use *cert* and *key* to sign the CRL and return the CRL as a string.
-    *days* is the number of days before the next CRL is due.
-
-
-.. py:method:: CRL.get_revoked()
-
-    Return a tuple of Revoked objects, by value not reference.
-
+.. autoclass:: CRL
+               :members:
+               :special-members:
+               :exclude-members: __weakref__
 
 .. _revoked:
 
 Revoked objects
 ---------------
 
-Revoked objects have the following methods:
+.. autoclass:: Revoked
+               :members:
 
-.. py:method:: Revoked.all_reasons()
+Exceptions
+----------
 
-    Return a list of all supported reasons.
+.. py:exception:: Error
 
-
-.. py:method:: Revoked.get_reason()
-
-    Return the revocation reason as a str.  Can be
-    None, which differs from "Unspecified".
+    Generic exception used in the :py:mod:`.crypto` module.
 
 
-.. py:method:: Revoked.get_rev_date()
+Digest names
+------------
 
-    Return the revocation date as a str.
-    The string is formatted as an ASN1 GENERALIZEDTIME.
+Several of the functions and methods in this module take a digest name.
+These must be strings describing a digest algorithm supported by OpenSSL (by ``EVP_get_digestbyname``, specifically).
+For example, :const:`b"md5"` or :const:`b"sha1"`.
 
-
-.. py:method:: Revoked.get_serial()
-
-    Return a str containing a hex number of the serial of the revoked certificate.
-
-
-.. py:method:: Revoked.set_reason(reason)
-
-    Set the revocation reason.  *reason* must be None or a string, but the
-    values are limited.  Spaces and case are ignored.  See
-    :py:meth:`all_reasons`.
+More information and a list of these digest names can be found in the ``EVP_DigestInit(3)`` man page of your OpenSSL installation.
+This page can be found online for the latest version of OpenSSL:
+https://www.openssl.org/docs/manmaster/crypto/EVP_DigestInit.html
 
 
-.. py:method:: Revoked.set_rev_date(date)
+Backwards compatible type names
+-------------------------------
 
-    Set the revocation date.
-    The string is formatted as an ASN1 GENERALIZEDTIME.
+When pyOpenSSL was originally written, the most current version of Python was 2.1.
+It made a distinction between classes and types.
+None of the versions of Python currently supported by pyOpenSSL still enforce that distinction:
+the type of an instance of an :class:`X509` object is now simply :class:`X509`.
+Originally, the type would have been :class:`X509Type`.
+These days, :class:`X509Type` and :class:`X509` are literally the same object.
+pyOpenSSL maintains these old names for backwards compatibility.
 
+Here's a table of these backwards-compatible names:
 
-.. py:method:: Revoked.set_serial(serial)
+======================  ==========================
+Type name               Backwards-compatible name
+======================  ==========================
+:class:`X509`           :class:`X509Type`
+:class:`X509Name`       :class:`X509NameType`
+:class:`X509Req`        :class:`X509ReqType`
+:class:`X509Store`      :class:`X509StoreType`
+:class:`X509Extension`  :class:`X509ExtensionType`
+:class:`PKey`           :class:`PKeyType`
+:class:`PKCS7`          :class:`PKCS7Type`
+:class:`PKCS12`         :class:`PKCS12Type`
+:class:`NetscapeSPKI`   :class:`NetscapeSPKIType`
+:class:`CRL`            :class:`CRLType`
+======================  ==========================
 
-    *serial* is a string containing a hex number of the serial of the revoked certificate.
+Some objects, such as :class:`Revoked`, don't have ``Type`` equivalents, because they were added after the restriction had been lifted.

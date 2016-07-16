@@ -39,11 +39,12 @@ Context, Connection.
 
 
 .. py:data:: OP_SINGLE_DH_USE
+             OP_SINGLE_ECDH_USE
 
-    Constant used with :py:meth:`set_options` of Context objects.
+    Constants used with :py:meth:`set_options` of Context objects.
 
-    When this option is used, a new key will always be created when using
-    ephemeral Diffie-Hellman.
+    When these options are used, a new key will always be created when using
+    ephemeral (Elliptic curve) Diffie-Hellman.
 
 
 .. py:data:: OP_EPHEMERAL_RSA
@@ -81,12 +82,6 @@ Context, Connection.
     SSLv2-compatible handshake, but don't want to use SSLv2.  If the underlying
     OpenSSL build is missing support for any of these protocols, the
     :py:const:`OP_NO_*` constant may be undefined.
-
-
-.. py:data:: MODE_NO_COMPRESSION
-
-   Constant used with :py:meth:`set_mode` of Context objects to disable
-   automatic compression of application traffic.
 
 
 .. py:data:: SSLEAY_VERSION
@@ -258,7 +253,7 @@ Context objects have the following methods:
 .. py:method:: Context.get_cert_store()
 
     Retrieve the certificate store (a X509Store object) that the context uses.
-    This can be used to add "trusted" certificates without using the.
+    This can be used to add "trusted" certificates without using the
     :py:meth:`load_verify_locations` method.
 
 
@@ -279,10 +274,7 @@ Context objects have the following methods:
     Retrieve the Context object's verify mode, as set by :py:meth:`set_verify`.
 
 
-.. py:method:: Context.load_client_ca(pemfile)
-
-    Read a file with PEM-formatted certificates that will be sent to the client
-    when requesting a client certificate.
+.. automethod:: Context.load_client_ca
 
 
 .. py:method:: Context.set_client_ca_list(certificate_authorities)
@@ -323,17 +315,22 @@ Context objects have the following methods:
     Load parameters for Ephemeral Diffie-Hellman from *dhfile*.
 
 
+.. py:method:: Context.set_tmp_ecdh(curve)
+
+   Select a curve to use for ECDHE key exchange.
+
+   The valid values of *curve* are the objects returned by
+   :py:func:`OpenSSL.crypto.get_elliptic_curves` or
+   :py:func:`OpenSSL.crypto.get_elliptic_curve`.
+
+
 .. py:method:: Context.set_app_data(data)
 
     Associate *data* with this Context object. *data* can be retrieved
     later using the :py:meth:`get_app_data` method.
 
 
-.. py:method:: Context.set_cipher_list(ciphers)
-
-    Set the list of ciphers to be used in this context. See the OpenSSL manual for
-    more information (e.g. :manpage:`ciphers(1)`)
-
+.. automethod:: Context.set_cipher_list
 
 .. py:method:: Context.set_info_callback(callback)
 
@@ -387,12 +384,7 @@ Context objects have the following methods:
     .. versionadded:: 0.14
 
 
-.. py:method:: Context.set_session_id(name)
-
-    Set the context *name* within which a session can be reused for this
-    Context object. This is needed when doing session resumption, because there is
-    no way for a stored session to know which Context object it is associated with.
-    *name* may be any binary data.
+.. automethod:: Context.set_session_id
 
 
 .. py:method:: Context.set_timeout(timeout)
@@ -469,6 +461,53 @@ Context objects have the following methods:
     .. versionadded:: 0.13
 
 
+.. py:method:: Context.set_npn_advertise_callback(callback)
+
+    Specify a callback function that will be called when offering `Next
+    Protocol Negotiation
+    <https://technotes.googlecode.com/git/nextprotoneg.html>`_ as a server.
+
+    *callback* should be the callback function.  It will be invoked with one
+    argument, the :py:class:`Connection` instance.  It should return a list of
+    bytestrings representing the advertised protocols, like
+    ``[b'http/1.1', b'spdy/2']``.
+
+    .. versionadded:: 0.15
+
+
+.. py:method:: Context.set_npn_select_callback(callback):
+
+    Specify a callback function that will be called when a server offers Next
+    Protocol Negotiation options.
+
+    *callback* should be the callback function.  It will be invoked with two
+    arguments: the :py:class:`Connection`, and a list of offered protocols as
+    bytestrings, e.g. ``[b'http/1.1', b'spdy/2']``.  It should return one of
+    those bytestrings, the chosen protocol.
+
+    .. versionadded:: 0.15
+
+.. py:method:: Context.set_alpn_protos(protos)
+
+    Specify the protocols that the client is prepared to speak after the TLS
+    connection has been negotiated using Application Layer Protocol
+    Negotiation.
+
+    *protos* should be a list of protocols that the client is offering, each
+    as a bytestring. For example, ``[b'http/1.1', b'spdy/2']``.
+
+
+.. py:method:: Context.set_alpn_select_callback(callback)
+
+    Specify a callback function that will be called on the server when a client
+    offers protocols using Application Layer Protocol Negotiation.
+
+    *callback* should be the callback function. It will be invoked with two
+    arguments: the :py:class:`Connection` and a list of offered protocols as
+    bytestrings, e.g. ``[b'http/1.1', b'spdy/2']``. It should return one of
+    these bytestrings, the chosen protocol.
+
+
 .. _openssl-session:
 
 Session objects
@@ -541,11 +580,22 @@ Connection objects have the following methods:
     Retrieve application data as set by :py:meth:`set_app_data`.
 
 
-.. py:method:: Connection.get_cipher_list()
+.. automethod:: Connection.get_cipher_list
 
-    Retrieve the list of ciphers used by the Connection object. WARNING: This API
-    has changed. It used to take an optional parameter and just return a string,
-    but not it returns the entire list in one go.
+
+.. py:method:: Connection.get_protocol_version()
+
+    Retrieve the version of the SSL or TLS protocol used by the Connection.
+    For example, it will return ``0x769`` for connections made over TLS
+    version 1.
+
+
+.. py:method:: Connection.get_protocol_version_name()
+
+    Retrieve the version of the SSL or TLS protocol used by the Connection as
+    a unicode string. For example, it will return ``TLSv1`` for connections
+    made over TLS version 1, or ``Unknown`` for connections that were not
+    successfully established.
 
 
 .. py:method:: Connection.get_client_ca_list()
@@ -604,12 +654,20 @@ Connection objects have the following methods:
     (**not** the underlying transport buffer).
 
 
-.. py:method:: Connection.recv(bufsize)
+.. py:method:: Connection.recv(bufsize[, flags])
 
     Receive data from the Connection. The return value is a string representing the
     data received. The maximum amount of data to be received at once, is specified
-    by *bufsize*.
+    by *bufsize*. The only supported flag is ``MSG_PEEK``, all other flags are
+    ignored.
 
+
+.. py:method:: Connection.recv_into(buffer[, nbytes[, flags]])
+
+    Receive data from the Connection and copy it directly into the provided
+    buffer. The return value is the number of bytes read from the connection.
+    The maximum amount of data to be received at once is specified by *nbytes*.
+    The only supported flag is ``MSG_PEEK``, all other flags are ignored.
 
 .. py:method:: Connection.bio_write(bytes)
 
@@ -618,11 +676,11 @@ Connection objects have the following methods:
     bytes (for example, in response to a call to :py:meth:`recv`).
 
 
-.. py:method:: Connection.renegotiate()
+.. automethod:: Connection.renegotiate
 
-    Renegotiate the SSL session. Call this if you wish to change cipher suites or
-    anything like that.
+.. automethod:: Connection.renegotiate_pending
 
+.. automethod:: Connection.total_renegotiations
 
 .. py:method:: Connection.send(string)
 
@@ -704,10 +762,7 @@ Connection objects have the following methods:
     BIO.
 
 
-.. py:method:: Connection.state_string()
-
-    Retrieve a verbose string detailing the state of the Connection.
-
+.. automethod:: Connection.get_state_string
 
 .. py:method:: Connection.client_random()
 
@@ -764,6 +819,68 @@ Connection objects have the following methods:
     the connection.
 
     .. versionadded:: 0.14
+
+
+.. py:method:: Connection.get_finished()
+
+    Obtain latest TLS Finished message that we sent, or :py:obj:`None` if
+    handshake is not completed.
+
+    .. versionadded:: 0.15
+
+
+.. py:method:: Connection.get_peer_finished()
+
+    Obtain latest TLS Finished message that we expected from peer, or
+    :py:obj:`None` if handshake is not completed.
+
+    .. versionadded:: 0.15
+
+
+.. py:method:: Connection.get_cipher_name()
+
+    Obtain the name of the currently used cipher.
+
+    .. versionadded:: 0.15
+
+
+.. py:method:: Connection.get_cipher_bits()
+
+    Obtain the number of secret bits of the currently used cipher.
+
+    .. versionadded:: 0.15
+
+
+.. py:method:: Connection.get_cipher_version()
+
+    Obtain the protocol name of the currently used cipher.
+
+    .. versionadded:: 0.15
+
+
+.. py:method:: Connection.get_next_proto_negotiated():
+
+    Get the protocol that was negotiated by Next Protocol Negotiation. Returns
+    a bytestring of the protocol name. If no protocol has been negotiated yet,
+    returns an empty string.
+
+    .. versionadded:: 0.15
+
+.. py:method:: Connection.set_alpn_protos(protos)
+
+    Specify the protocols that the client is prepared to speak after the TLS
+    connection has been negotiated using Application Layer Protocol
+    Negotiation.
+
+    *protos* should be a list of protocols that the client is offering, each
+    as a bytestring. For example, ``[b'http/1.1', b'spdy/2']``.
+
+
+.. py:method:: Connection.get_alpn_proto_negotiated()
+
+    Get the protocol that was negotiated by Application Layer Protocol
+    Negotiation. Returns a bytestring of the protocol name. If no protocol has
+    been negotiated yet, returns an empty string.
 
 
 .. Rubric:: Footnotes

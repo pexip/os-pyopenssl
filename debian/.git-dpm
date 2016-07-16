@@ -1,0 +1,11 @@
+# see git-dpm(1) from git-dpm package
+092f408ee501261a75366b93e2cef40c37d5fe1f
+092f408ee501261a75366b93e2cef40c37d5fe1f
+55b388fba7df6f783cc8d85fcf5ff17c32d3c78b
+55b388fba7df6f783cc8d85fcf5ff17c32d3c78b
+pyopenssl_16.0.0.orig.tar.gz
+4efb8f880743acf48070d3adaf9f0bce5601e6a8
+171929
+debianTag="debian/%e%v"
+patchedTag="patched/%e%v"
+upstreamTag="upstream/%e%u"
