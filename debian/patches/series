@@ -4,3 +4,5 @@ CVE-2013-4314.patch
 remove_sslv2_test.patch
 pfs_methods.patch
 tlsext_host_name.patch
+no_ssl3.patch
+openssl_1.0.2.patch

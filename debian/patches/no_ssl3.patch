@@ -1,0 +1,68 @@
+--- a/OpenSSL/ssl/context.c	2016-10-12 03:48:31.630918393 +0000
++++ b/OpenSSL/ssl/context.c	2016-10-12 03:48:19.114919062 +0000
+@@ -246,6 +246,12 @@
+ #define SSLv2_METHOD_TEXT "SSLv2_METHOD, "
+ #endif
+ 
++#ifdef OPENSSL_NO_SSL3
++#define SSLv3_METHOD_TEXT ""
++#else
++#define SSLv3_METHOD_TEXT "SSLv3_METHOD, "
++#endif
++
+ 
+ static char ssl_Context_doc[] = "\n\
+ Context(method) -> Context instance\n\
+@@ -253,10 +259,11 @@
+ OpenSSL.SSL.Context instances define the parameters for setting up new SSL\n\
+ connections.\n\
+ \n\
+-@param method: One of " SSLv2_METHOD_TEXT "SSLv3_METHOD, SSLv23_METHOD, or\n\
++@param method: One of " SSLv2_METHOD_TEXT SSLv3_METHOD_TEXT "SSLv23_METHOD, or\n\
+                TLSv1_METHOD.\n\
+ ";
+ 
++#undef SSLv3_METHOD_TEXT
+ #undef SSLv2_METHOD_TEXT
+ 
+ static char ssl_Context_load_verify_locations_doc[] = "\n\
+@@ -1128,6 +1135,10 @@
+             method = SSLv23_method();
+             break;
+         case ssl_SSLv3_METHOD:
++#ifdef OPENSSL_NO_SSL3
++            PyErr_SetString(PyExc_ValueError, "SSLv3_METHOD not supported by this version of OpenSSL");
++            return NULL;
++#endif
+             method = SSLv3_method();
+             break;
+         case ssl_TLSv1_METHOD:
+--- a/OpenSSL/test/test_ssl.py	2013-09-20 15:46:31.719533577 -0400
++++ b/OpenSSL/test/test_ssl.py	2013-09-23 10:00:28.768972016 -0400
+@@ -184,7 +184,7 @@
+         L{Context} can be instantiated with one of L{SSLv2_METHOD},
+         L{SSLv3_METHOD}, L{SSLv23_METHOD}, or L{TLSv1_METHOD}.
+         """
+-        for meth in [SSLv3_METHOD, SSLv23_METHOD, TLSv1_METHOD]:
++        for meth in [SSLv23_METHOD, TLSv1_METHOD]:
+             Context(meth)
+         self.assertRaises(TypeError, Context, "")
+         self.assertRaises(ValueError, Context, 10)
+@@ -560,7 +560,7 @@ class ContextTests(TestCase, _LoopbackMixin):
+             # really test this. -exarkun
+ 
+             # Arg, verisign.com doesn't speak TLSv1
+-            context = Context(SSLv3_METHOD)
++            context = Context(SSLv23_METHOD)
+             context.set_default_verify_paths()
+             context.set_verify(
+                 VERIFY_PEER,
+@@ -1424,7 +1424,7 @@ class MemoryBIOTests(TestCase, _LoopbackMixin):
+         Test that L{OpenSSL.SSL.bio_read} and L{OpenSSL.SSL.bio_write} don't
+         work on L{OpenSSL.SSL.Connection}() that use sockets.
+         """
+-        context = Context(SSLv3_METHOD)
++        context = Context(SSLv23_METHOD)
+         client = socket()
+         clientSSL = Connection(context, client)
+         self.assertRaises( TypeError, clientSSL.bio_read, 100)
