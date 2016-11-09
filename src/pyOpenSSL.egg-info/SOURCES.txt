@@ -35,14 +35,8 @@ examples/SecureXMLRPCServer.py
 examples/certgen.py
 examples/mk_simple_certs.py
 examples/proxy.py
-examples/simple/CA.cert
-examples/simple/CA.pkey
 examples/simple/README
-examples/simple/client.cert
-examples/simple/client.pkey
 examples/simple/client.py
-examples/simple/server.cert
-examples/simple/server.pkey
 examples/simple/server.py
 examples/sni/README
 examples/sni/another.invalid.crt

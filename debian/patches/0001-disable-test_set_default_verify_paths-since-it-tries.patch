@@ -1,4 +1,4 @@
-From 39fa2cb8cab66da9c6f2f2d425dc61f44aab76ed Mon Sep 17 00:00:00 2001
+From b9227a312f9d70853fa42af49d920a9099df68aa Mon Sep 17 00:00:00 2001
 From: SVN-Git Migration <python-modules-team@lists.alioth.debian.org>
 Date: Thu, 8 Oct 2015 10:47:52 -0700
 Subject: disable test_set_default_verify_paths since it tries to access the
@@ -9,10 +9,10 @@ Subject: disable test_set_default_verify_paths since it tries to access the
  1 file changed, 15 insertions(+), 13 deletions(-)
 
 diff --git a/tests/test_ssl.py b/tests/test_ssl.py
-index ab316fc..3446c6e 100644
+index 2b7e276..31738d9 100644
 --- a/tests/test_ssl.py
 +++ b/tests/test_ssl.py
-@@ -1197,6 +1197,7 @@ class ContextTests(TestCase, _LoopbackMixin):
+@@ -1182,6 +1182,7 @@ class ContextTests(TestCase, _LoopbackMixin):
          platform == "win32",
          reason="set_default_verify_paths appears not to work on Windows.  "
          "See LP#404343 and LP#404344."
@@ -20,7 +20,7 @@ index ab316fc..3446c6e 100644
      )
      def test_set_default_verify_paths(self):
          """
-@@ -1211,21 +1212,22 @@ class ContextTests(TestCase, _LoopbackMixin):
+@@ -1196,21 +1197,22 @@ class ContextTests(TestCase, _LoopbackMixin):
          # internet which has such a certificate.  Connecting to the network
          # in a unit test is bad, but it's the only way I can think of to
          # really test this. -exarkun
