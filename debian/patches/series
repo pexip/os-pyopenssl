@@ -1,6 +1,3 @@
 disable_test_set_default_verify_paths.patch
 bbff8b97da488d19d3a26f6eda5f83fc88ad430c.patch
 pfs_methods.patch
-tlsext_host_name.patch
-no_ssl3.patch
-openssl_1.0.2.patch

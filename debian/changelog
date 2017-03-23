@@ -2,12 +2,8 @@ pyopenssl (0.14-1pexip1) pexip; urgency=low
 
   * Migrate to Jessie
   * Retain the following changes:
-    - Add methods to set temporary (EC)DH parameters
-    - Add method to set SNI
-    - debian/patches/no_ssl3.patch:
-      Disable SSLv3 if OpenSSL does not support it.
-    - debian/patches/openssl_1.0.2.patch:
-      Fix up for OpenSSL 1.0.2
+    - debian/patches/pfs_methods.patch:
+      Add methods to set temporary (EC)DH parameters
 
  -- John-Mark Bell <jmb@pexip.com>  Thu, 23 Mar 2017 20:07:13 +0000
 

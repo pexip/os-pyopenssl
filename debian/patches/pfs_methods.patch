@@ -1,113 +1,65 @@
-diff --git a/OpenSSL/ssl/context.c b/OpenSSL/ssl/context.c
-index ea7847f..707dcea 100644
---- a/OpenSSL/ssl/context.c
-+++ b/OpenSSL/ssl/context.c
-@@ -1058,6 +1058,99 @@ ssl_Context_set_options(ssl_ContextObj *self, PyObject *args)
-     return PyLong_FromLong(SSL_CTX_set_options(self->ctx, options));
- }
+diff --git a/OpenSSL/SSL.py b/OpenSSL/SSL.py
+index a257f16..114f5ed 100644
+--- a/OpenSSL/SSL.py
++++ b/OpenSSL/SSL.py
+@@ -783,6 +783,60 @@ class Context(object):
+         _lib.SSL_CTX_set_tlsext_servername_callback(
+             self._context, self._tlsext_servername_callback)
  
-+static char ssl_Context_set_tmp_dh_from_pem_doc[] = "\n\
-+Set DH parameters from PEM-encoded data\n\
-+\n\
-+@param pem: String containing PEM-encoded DH parameters.\n\
-+@return: None\n\
-+";
-+static PyObject *
-+ssl_Context_set_tmp_dh_from_pem(ssl_ContextObj *self, PyObject *args)
-+{
-+    char *pem;
-+    BIO *bio;
-+    DH *dh;
++    def set_tmp_dh_from_pem(self, pem):
++        """
++        Set DH parameters from PEM-encoded data
 +
-+    if (!PyArg_ParseTuple(args, "s:set_tmp_dh_from_pem", &pem))
-+        return NULL;
++        :param pem: String containing PEM-encoded DH parameters.
++        :return: None
++        """
++        if not isinstance(pem, bytes):
++            raise TypeError("pem must be a byte string")
 +
-+    bio = BIO_new_mem_buf(pem, -1);
-+    if (bio == NULL) {
-+        exception_from_error_queue(ssl_Error);
-+        return NULL;
-+    }
++        bio = _lib.BIO_new(_lib.BIO_s_mem())
++        if bio == _ffi.NULL:
++            _raise_current_error()
++        bio = _ffi.gc(bio, _lib.BIO_free)
 +
-+    dh = PEM_read_bio_DHparams(bio, NULL, NULL, NULL);
-+    if (dh == NULL) {
-+        exception_from_error_queue(ssl_Error);
-+        BIO_free(bio);
-+        return NULL;
-+    }
++        dh = _lib.PEM_read_bio_DHparams(bio, _ffi.NULL, _ffi.NULL, _ffi.NULL)
++        if dh == _ffi.NULL:
++            _raise_current_error()
++        dh = _ffi.gc(dh, _lib.DH_free)
 +
-+    SSL_CTX_set_tmp_dh(self->ctx, dh);
-+    DH_free(dh);
-+    BIO_free(bio);
++        _lib.SSL_CTX_set_tmp_dh(self._context, dh)
 +
-+    Py_INCREF(Py_None);
-+    return Py_None;
-+}
++    def set_tmp_ecdh_from_pem(self, pem):
++        """
++        Set ECDH parameters from PEM-encoded data
 +
-+static char ssl_Context_set_tmp_ecdh_from_pem_doc[] = "\n\
-+Set ECDH parameters from PEM-encoded data\n\
-+\n\
-+@param pem: String containing PEM-encoded ECDH parameters.\n\
-+@return: None\n\
-+";
-+static PyObject *
-+ssl_Context_set_tmp_ecdh_from_pem(ssl_ContextObj *self, PyObject *args)
-+{
-+    char *pem;
-+    BIO *bio;
-+    EC_GROUP *group;
-+    EC_KEY *key;
-+    int nid;
++        :param pem: String containing PEM-encoded ECDH parameters.
++        :return: None
++        """
++        if not isinstance(pem, bytes):
++            raise TypeError("pem must be a byte string")
 +
-+    if (!PyArg_ParseTuple(args, "s:set_tmp_ecdh_from_pem", &pem))
-+        return NULL;
++        bio = _lib.BIO_new(_lib.BIO_s_mem())
++        if bio == _ffi.NULL:
++            _raise_current_error()
++        bio = _ffi.gc(bio, _lib.BIO_free)
 +
-+    bio = BIO_new_mem_buf(pem, -1);
-+    if (bio == NULL) {
-+        exception_from_error_queue(ssl_Error);
-+        return NULL;
-+    }
++        group = _lib.PEM_read_bio_ECPKParameters(bio, _ffi.NULL, _ffi.NULL, _ffi.NULL)
++        if group == _ffi.NULL:
++            _raise_current_error()
++        group = _ffi.gc(group, _lib.EC_GROUP_free)
 +
-+    group = PEM_read_bio_ECPKParameters(bio, NULL, NULL, NULL);
-+    if (group == NULL) {
-+        exception_from_error_queue(ssl_Error);
-+        BIO_free(bio);
-+        return NULL;
-+    }
++        nid = _lib.EC_GROUP_get_curve_name(group)
++        if nid == 0:
++            _raise_current_error()
 +
-+    nid = EC_GROUP_get_curve_name(group);
-+    if (nid == 0) {
-+        exception_from_error_queue(ssl_Error);
-+        EC_GROUP_free(group);
-+        BIO_free(bio);
-+        return NULL;
-+    }
++        key = _lib.EC_KEY_new_by_curve_name(nid)
++        if key == _ffi.NULL:
++            _raise_current_error()
++        key = _ffi.gc(key, _lib.EC_KEY_free)
 +
-+    key = EC_KEY_new_by_curve_name(nid);
-+    if (key == NULL) {
-+        exception_from_error_queue(ssl_Error);
-+        EC_GROUP_free(group);
-+        BIO_free(bio);
-+        return NULL;
-+    }
++        _lib.SSL_CTX_set_tmp_ecdh(self._context, key)
 +
-+    SSL_CTX_set_tmp_ecdh(self->ctx, key);
 +
-+    EC_KEY_free(key);
-+    EC_GROUP_free(group);
-+    BIO_free(bio);
-+
-+    Py_INCREF(Py_None);
-+    return Py_None;
-+}
+ ContextType = Context
  
- /*
-  * Member methods in the Context object
-@@ -1096,6 +1189,8 @@ static PyMethodDef ssl_Context_methods[] = {
-     ADD_METHOD(set_app_data),
-     ADD_METHOD(get_cert_store),
-     ADD_METHOD(set_options),
-+    ADD_METHOD(set_tmp_dh_from_pem),
-+    ADD_METHOD(set_tmp_ecdh_from_pem),
-     { NULL, NULL }
- };
- #undef ADD_METHOD
+ 
