@@ -11,7 +11,7 @@ Homepage: http://launchpad.net/pyopenssl
 Vcs-Svn: svn://svn.debian.org/python-modules/packages/pyopenssl/trunk/
 Vcs-Browser: http://svn.debian.org/viewsvn/python-modules/packages/pyopenssl/trunk/
 XS-Python-Version: all
-XS-Pexip-Upstream: http://archive.ubuntu.com/ubuntu/ precise
+XS-Pexip-Upstream: http://ftp.debian.org/debian/ jessie
 
 Package: python-openssl
 Architecture: any
