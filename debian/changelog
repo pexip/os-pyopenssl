@@ -4,6 +4,10 @@ pyopenssl (0.14-1pexip2) pexip; urgency=low
     change that ensures the first parameter to the TLS verify
     callback is the Connection not the Context. This restores the
     pre 0.14 behaviour.
+  * debian/patches/fix_invalid_errno.patch: Handle case where
+    OpenSSL returns SSL_ERROR_SYSCALL but errno is 0. This can
+    occur with OpenSSL >=1.0.2 when the TLS verify callback
+    returns 0.
 
  -- John-Mark Bell <jmb@pexip.com>  Wed, 10 May 2017 02:09:15 +0100
 
