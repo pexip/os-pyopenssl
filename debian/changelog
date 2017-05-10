@@ -1,3 +1,12 @@
+pyopenssl (0.14-1pexip2) pexip; urgency=low
+
+  * debian/patches/fix_tls_verify_callback.patch: Backport upstream
+    change that ensures the first parameter to the TLS verify
+    callback is the Connection not the Context. This restores the
+    pre 0.14 behaviour.
+
+ -- John-Mark Bell <jmb@pexip.com>  Wed, 10 May 2017 02:09:15 +0100
+
 pyopenssl (0.14-1pexip1) pexip; urgency=low
 
   * Migrate to Jessie
