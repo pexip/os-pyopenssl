@@ -2,7 +2,7 @@ diff --git a/OpenSSL/SSL.py b/OpenSSL/SSL.py
 index a257f16..114f5ed 100644
 --- a/OpenSSL/SSL.py
 +++ b/OpenSSL/SSL.py
-@@ -783,6 +783,60 @@ class Context(object):
+@@ -783,6 +783,68 @@ class Context(object):
          _lib.SSL_CTX_set_tlsext_servername_callback(
              self._context, self._tlsext_servername_callback)
  
@@ -20,6 +20,10 @@ index a257f16..114f5ed 100644
 +        if bio == _ffi.NULL:
 +            _raise_current_error()
 +        bio = _ffi.gc(bio, _lib.BIO_free)
++
++        result = _lib.BIO_write(bio, pem, len(pem))
++        if result <= 0:
++            _raise_current_error()
 +
 +        dh = _lib.PEM_read_bio_DHparams(bio, _ffi.NULL, _ffi.NULL, _ffi.NULL)
 +        if dh == _ffi.NULL:
@@ -42,6 +46,10 @@ index a257f16..114f5ed 100644
 +        if bio == _ffi.NULL:
 +            _raise_current_error()
 +        bio = _ffi.gc(bio, _lib.BIO_free)
++
++        result = _lib.BIO_write(bio, pem, len(pem))
++        if result <= 0:
++            _raise_current_error()
 +
 +        group = _lib.PEM_read_bio_ECPKParameters(bio, _ffi.NULL, _ffi.NULL, _ffi.NULL)
 +        if group == _ffi.NULL:

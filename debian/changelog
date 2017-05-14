@@ -1,3 +1,9 @@
+pyopenssl (0.14-1pexip3) pexip; urgency=low
+
+  * debian/patches/pfs_methods.patch: Ensure data is written to BIO
+
+ -- John-Mark Bell <jmb@pexip.com>  Sun, 14 May 2017 02:19:41 +0100
+
 pyopenssl (0.14-1pexip2) pexip; urgency=low
 
   * debian/patches/fix_tls_verify_callback.patch: Backport upstream
