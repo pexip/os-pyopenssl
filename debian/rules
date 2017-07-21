@@ -16,17 +16,14 @@ override_dh_auto_build:
 	    python$$py setup.py build; \
 	done
 
-	$(MAKE) -C doc html
+	$(MAKE) -C doc html PYTHONPATH=$(CURDIR)/`python -c "from distutils.command.build import build ; from distutils.core import Distribution ; b = build(Distribution()) ; b.finalize_options() ; print(b.build_purelib)"`
 
 override_dh_auto_test:
 ifeq ($(filter nocheck,$(DEB_BUILD_OPTIONS)),)
 	# run tests
 	-for py in $(PYVERS); do  \
-	    for test in OpenSSL/test/test*; do \
-	        echo "running $$test for python$$py ..."; \
-		LIB=$$(python$$py -c "from distutils.command.build import build ; from distutils.core import Distribution ; b = build(Distribution()) ; b.finalize_options() ; print(b.build_purelib)") ; \
-	        PYTHONPATH=$$LIB python$$py $$test; \
-	    done; \
+	    LIB=$$(python$$py -c "from distutils.command.build import build ; from distutils.core import Distribution ; b = build(Distribution()) ; b.finalize_options() ; print(b.build_purelib)") ; \
+	    PYTHONPATH=$$LIB py.test-$$py ;\
 	done
 endif
      
@@ -58,4 +55,4 @@ override_dh_auto_install:
  	done
 
 override_dh_installchangelogs:
-	dh_installchangelogs ChangeLog
+	dh_installchangelogs CHANGELOG.rst

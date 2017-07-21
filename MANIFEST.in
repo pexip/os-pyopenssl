@@ -1,6 +1,9 @@
-include     LICENSE ChangeLog INSTALL README TODO MANIFEST.in OpenSSL/RATIONALE
+include             LICENSE MANIFEST.in *.rst tox.ini docs-requirements.txt .coveragerc
+exclude             leakcheck
+recursive-include   tests       *.py
 recursive-include   doc         *
 recursive-include   examples    *
 recursive-include   rpm         *
-global-exclude  *.pyc
+recursive-exclude   leakcheck   *.py *.pem
 prune               doc/_build
+prune               .travis

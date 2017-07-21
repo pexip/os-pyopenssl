@@ -3,18 +3,18 @@ Upstream-Name: pyOpenSSL
 Source: https://github.com/pyca/pyopenssl
 
 Files: *
-Copyright: Copyright (C) 2008-2014 Jean-Paul Calderone, All rights reserved
+Copyright: Copyright (C) 2008-2015 Jean-Paul Calderone, All rights reserved
 License: Apache 2.0
 
 Files: debian/*
-Copyright: Copyright (C) 2008-2014, Sandro Tosi <morph@debian.org>
+Copyright: Copyright (C) 2008-2016, Sandro Tosi <morph@debian.org>
 License: Apache 2.0
 
 License: Apache 2.0
  A copy of the Apache License (version 2) can be found in
  /usr/share/common-licenses/Apache-2.0 on Debian systems.
 
-Files: examples/simple/*.py examples/certgen.py OpenSSL/version.py
+Files: examples/simple/*.py examples/certgen.py src/OpenSSL/version.py
 Copyright: Copyright (C) AB Strakt
  Copyright (C) Jean-Paul Calderone
 License: Apache 2.0
@@ -26,15 +26,19 @@ License: This code is in the public domain.
 Files: examples/proxy.py
 Author: Mihai Ibanescu <misa@redhat.com>
 
-Files: OpenSSL/test/test_rand.py
+Files: tests/test_rand.py
 Copyright: Copyright (c) Frederick Dean
 License: Apache 2.0
 
-Files: OpenSSL/test/util.py
+Files: tests/util.py
 Copyright: Copyright (C) Jean-Paul Calderone
  Copyright (C) Twisted Matrix Laboratories.
 License: Apache 2.0
 
-Files: OpenSSL/__init__.py
+Files: src/OpenSSL/__init__.py
 Copyright: Copyright (C) AB Strakt
+License: Apache 2.0
+
+Files: tests/conftest.py
+Copyright: Copyright (c) The pyOpenSSL developers
 License: Apache 2.0

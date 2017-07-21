@@ -1,0 +1,30 @@
+From 092f408ee501261a75366b93e2cef40c37d5fe1f Mon Sep 17 00:00:00 2001
+From: Sandro Tosi <morph@debian.org>
+Date: Wed, 13 Apr 2016 21:03:53 +0100
+Subject: pass PYTHONPATH when building HTML doc
+
+---
+ doc/Makefile | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/doc/Makefile b/doc/Makefile
+index 4202bee..5fec498 100644
+--- a/doc/Makefile
++++ b/doc/Makefile
+@@ -6,6 +6,7 @@ SPHINXOPTS    =
+ SPHINXBUILD   = sphinx-build
+ PAPER         =
+ BUILDDIR      = _build
++PYTHONPATH    = .
+ 
+ # Internal variables.
+ PAPEROPT_a4     = -D latex_paper_size=a4
+@@ -37,7 +38,7 @@ clean:
+ 	-rm -rf $(BUILDDIR)/*
+ 
+ html:
+-	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
++	PYTHONPATH=$(PYTHONPATH) $(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
+ 	@echo
+ 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
+ 
