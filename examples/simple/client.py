@@ -8,26 +8,36 @@
 Simple SSL client, using blocking I/O
 """
 
-from OpenSSL import SSL
-import sys, os, select, socket
+import os
+import socket
+import sys
+
+from OpenSSL import SSL, crypto
+
 
 def verify_cb(conn, cert, errnum, depth, ok):
-    # This obviously has to be updated
-    print 'Got certificate: %s' % cert.get_subject()
+    certsubject = crypto.X509Name(cert.get_subject())
+    commonname = certsubject.commonName
+    print('Got certificate: ' + commonname)
     return ok
 
+
 if len(sys.argv) < 3:
-    print 'Usage: python[2] client.py HOST PORT'
+    print('Usage: python client.py HOST PORT')
     sys.exit(1)
+
 
 dir = os.path.dirname(sys.argv[0])
 if dir == '':
     dir = os.curdir
 
+
 # Initialize context
 ctx = SSL.Context(SSL.SSLv23_METHOD)
-ctx.set_verify(SSL.VERIFY_PEER, verify_cb) # Demand a certificate
-ctx.use_privatekey_file (os.path.join(dir, 'client.pkey'))
+ctx.set_options(SSL.OP_NO_SSLv2)
+ctx.set_options(SSL.OP_NO_SSLv3)
+ctx.set_verify(SSL.VERIFY_PEER, verify_cb)  # Demand a certificate
+ctx.use_privatekey_file(os.path.join(dir, 'client.pkey'))
 ctx.use_certificate_file(os.path.join(dir, 'client.cert'))
 ctx.load_verify_locations(os.path.join(dir, 'CA.cert'))
 
@@ -41,10 +51,10 @@ while 1:
         break
     try:
         sock.send(line)
-        sys.stdout.write(sock.recv(1024))
+        sys.stdout.write(sock.recv(1024).decode('utf-8'))
         sys.stdout.flush()
     except SSL.Error:
-        print 'Connection died unexpectedly'
+        print('Connection died unexpectedly')
         break
 
 
