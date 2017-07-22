@@ -1,6 +1,7 @@
 pyopenssl (16.2.0-1pexip1) pexip; urgency=low
 
   * Migrate to Stretch
+  * debian/rules: Run testsuite
 
  -- John-Mark Bell <jmb@pexip.com>  Sat, 22 Jul 2017 05:32:15 +0100
 

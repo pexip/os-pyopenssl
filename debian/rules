@@ -23,7 +23,7 @@ ifeq ($(filter nocheck,$(DEB_BUILD_OPTIONS)),)
 	# run tests
 	-for py in $(PYVERS); do  \
 	    LIB=$$(python$$py -c "from distutils.command.build import build ; from distutils.core import Distribution ; b = build(Distribution()) ; b.finalize_options() ; print(b.build_purelib)") ; \
-	    PYTHONPATH=$$LIB py.test-$$py ;\
+	    if [ "$${py%%.*}" = "3" ]; then PYTHONPATH=$$LIB py.test-3; else PYTHONPATH=$$LIB py.test; fi ;\
 	done
 endif
      
