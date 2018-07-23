@@ -1,3 +1,9 @@
+pyopenssl (16.2.0-1pexip2) pexip; urgency=low
+
+  * Build-Depend on libssl 1.0.x
+
+ -- John-Mark Bell <jmb@pexip.com>  Mon, 23 Jul 2018 15:07:26 +0100
+
 pyopenssl (16.2.0-1pexip1) pexip; urgency=low
 
   * Migrate to Stretch
