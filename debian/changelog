@@ -1,3 +1,10 @@
+pyopenssl (16.2.0-1pexip3) pexip; urgency=low
+
+  * Backport fix for CVE-2018-1000807
+  * (Build-)Depend on python-cryptography with X509_up_ref
+
+ -- John-Mark Bell <jmb@pexip.com>  Mon, 12 Nov 2018 23:45:02 +0000
+
 pyopenssl (16.2.0-1pexip2) pexip; urgency=low
 
   * Build-Depend on libssl 1.0.x
