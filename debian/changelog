@@ -1,3 +1,80 @@
+pyopenssl (19.0.0-1) unstable; urgency=medium
+
+  [ Ondřej Nový ]
+  * Convert git repository from git-dpm to gbp layout
+
+  [ Sandro Tosi ]
+  * New upstream release
+  * debian/copyright
+    - extend packaging copyright years
+  * debian/control
+    - update deps on cryptofraphy to >= 2.3
+    - bump Standards-Version to 4.3.0 (no changes needed)
+
+ -- Sandro Tosi <morph@debian.org>  Fri, 25 Jan 2019 21:36:25 -0500
+
+pyopenssl (18.0.0-1) unstable; urgency=medium
+
+  [ Ondřej Nový ]
+  * d/control:
+    - Set Vcs-* to salsa.debian.org
+    - Remove python{,3}-all duplicates in B-D
+    - Remove ancient X-Python3-Version field
+    - Remove empty line at the end of file
+    - Bump Standards-Version to 4.1.4 (no changes needed)
+  * d/copyright:
+    - Use https protocol in Format field
+    - Rename shortname of licence from "Apache 2.0" to "Apache-2.0"
+    - Fix public domain license
+    - Mention license of examples/proxy.py
+  * d/changelog: Remove trailing whitespaces
+  * d/rules: Remove trailing whitespaces
+
+  [ Sandro Tosi ]
+  * New upstream release
+  * debian/patches/0001-disable-test_set_default_verify_paths-since-it-tries.patch
+    - refreshed to new upstream release
+  * debian/patches/0003-Don-t-add-not-supported-SSL_ST_-into-_all_.patch
+    - dropped, released upstream
+  * debian/control
+    - bump cryptography dependency to >= 2.2.1
+    - bump pytest build-dep to >= 3.0.1
+  * debian/copyright
+    - extend packaging copyright years
+
+ -- Sandro Tosi <morph@debian.org>  Sat, 09 Jun 2018 18:48:34 -0400
+
+pyopenssl (17.5.0-1.1) unstable; urgency=medium
+
+  * Non-maintainer upload.
+  * Add upstream patch: Don't add not supported SSL_ST_* into _all_
+    (Closes: #891727)
+
+ -- Ondřej Nový <onovy@debian.org>  Tue, 29 May 2018 16:26:51 +0200
+
+pyopenssl (17.5.0-1) unstable; urgency=medium
+
+  * New upstream release
+  * debian/control
+    - bump Standards-Version to 4.1.2 (no changes needed)
+    - bump cryptography versioned dep to 2.1.4
+    - updated homepage
+    - add pretend and flaky to b-d, needed by tests
+    - use py3k versions of sphinx and sphinx_rtd_theme
+    - b-d on python-all and python3-all, not the -dev variants
+    - remove libssl-dev, openssl from b-d, those funcions are provided by
+      cryptography now; Addresses: #857206
+  * debian/copyright
+    - extend packaging copyright years
+  * debian/rules
+    - use the right py.test tool name to run test for Python 2 and 3;
+      Closes: #857206
+    - explicitly set LC_ALL to C.UTF-8
+  * debian/watch
+    - use HTTPS to contact pypi.debian.net
+
+ -- Sandro Tosi <morph@debian.org>  Tue, 12 Dec 2017 23:52:40 -0500
+
 pyopenssl (16.2.0-1) unstable; urgency=medium
 
   * New upstream release; Closes: #843644
@@ -117,7 +194,7 @@ pyopenssl (0.13.1-1) unstable; urgency=low
 
   [ Jakub Wilk ]
   * Use canonical URIs for Vcs-* fields.
- 
+
   [ Sandro Tosi ]
   * New upstream release
     - debian/patches/CVE-2013-4314.patch removed, merged upstream
@@ -346,7 +423,7 @@ pyopenssl (0.6-4) unstable; urgency=low
     - fixing commands to refer to new packages names
 
   [ Piotr Ożarowski ]
-  * Add python-pyopenssl to python-openssl's Conflicts, Replaces and Provides 
+  * Add python-pyopenssl to python-openssl's Conflicts, Replaces and Provides
 
  -- Sandro Tosi <matrixhasu@gmail.com>  Mon, 25 Feb 2008 22:39:45 +0100
 
@@ -580,7 +657,7 @@ pyopenssl (0.3-3) unstable; urgency=low
 
 pyopenssl (0.3-2) unstable; urgency=low
 
-  * X509Name objects now has a compare method 
+  * X509Name objects now has a compare method
 
  -- Martin Sjögren <martin@strakt.com>  Tue,  7 Aug 2001 10:53:58 +0200
 
