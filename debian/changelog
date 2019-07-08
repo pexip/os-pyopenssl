@@ -1,3 +1,9 @@
+pyopenssl (16.2.0-1pexip4) pexip; urgency=medium
+
+  * Python3
+
+ -- Carl Chipperfield <carl@pexip.com>  Sat, 22 Jun 2019 00:12:38 +0000
+
 pyopenssl (16.2.0-1pexip3) pexip; urgency=low
 
   * Backport fix for CVE-2018-1000807
