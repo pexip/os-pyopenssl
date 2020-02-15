@@ -11,7 +11,7 @@ Vcs-Git: https://anonscm.debian.org/git/python-modules/packages/pyopenssl.git
 Vcs-Browser: https://anonscm.debian.org/cgit/python-modules/packages/pyopenssl.git
 XS-Python-Version: all
 X-Python3-Version: >= 3.2
-XS-Pexip-Upstream: http://ftp.debian.org/debian/ stretch
+XS-Pexip-Upstream: http://ftp.debian.org/debian/ buster
 
 Package: python-openssl
 Architecture: all
