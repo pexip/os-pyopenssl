@@ -6,7 +6,6 @@ INSTALL.rst
 LICENSE
 MANIFEST.in
 README.rst
-docs-requirements.txt
 setup.cfg
 setup.py
 tox.ini
@@ -24,7 +23,6 @@ doc/internals.rst
 doc/introduction.rst
 doc/make.bat
 doc/api/crypto.rst
-doc/api/rand.rst
 doc/api/ssl.rst
 doc/images/pyopenssl-brand.png
 doc/images/pyopenssl-icon.png
@@ -50,6 +48,7 @@ src/OpenSSL/SSL.py
 src/OpenSSL/__init__.py
 src/OpenSSL/_util.py
 src/OpenSSL/crypto.py
+src/OpenSSL/debug.py
 src/OpenSSL/rand.py
 src/OpenSSL/tsafe.py
 src/OpenSSL/version.py
@@ -62,6 +61,7 @@ tests/__init__.py
 tests/conftest.py
 tests/memdbg.py
 tests/test_crypto.py
+tests/test_debug.py
 tests/test_rand.py
 tests/test_ssl.py
 tests/test_tsafe.py

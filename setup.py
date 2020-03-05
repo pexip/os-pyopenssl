@@ -49,7 +49,7 @@ LONG = (
     read_file("README.rst") + "\n\n" +
     "Release Information\n" +
     "===================\n\n" +
-    re.search("(\d{2}.\d.\d \(.*?\)\n.*?)\n\n\n----\n",
+    re.search(r"(\d{2}.\d.\d \(.*?\)\n.*?)\n\n\n----\n",
               read_file("CHANGELOG.rst"), re.S).group(1) +
     "\n\n`Full changelog " +
     "<{uri}en/stable/changelog.html>`_.\n\n"
@@ -77,12 +77,12 @@ if __name__ == "__main__":
             'Operating System :: POSIX',
 
             'Programming Language :: Python :: 2',
-            'Programming Language :: Python :: 2.6',
             'Programming Language :: Python :: 2.7',
             'Programming Language :: Python :: 3',
-            'Programming Language :: Python :: 3.3',
             'Programming Language :: Python :: 3.4',
             'Programming Language :: Python :: 3.5',
+            'Programming Language :: Python :: 3.6',
+            'Programming Language :: Python :: 3.7',
 
             'Programming Language :: Python :: Implementation :: CPython',
             'Programming Language :: Python :: Implementation :: PyPy',
@@ -95,7 +95,18 @@ if __name__ == "__main__":
         package_dir={"": "src"},
         install_requires=[
             # Fix cryptographyMinimum in tox.ini when changing this!
-            "cryptography>=1.3.4",
+            "cryptography>=2.3",
             "six>=1.5.2"
         ],
+        extras_require={
+            "test": [
+                "flaky",
+                "pretend",
+                "pytest>=3.0.1",
+            ],
+            "docs": [
+                "sphinx",
+                "sphinx_rtd_theme",
+            ]
+        },
     )
