@@ -1,3 +1,11 @@
+pyopenssl (19.0.0-1pexip2) pexip; urgency=medium
+
+  * debian/patches/pfs_methods.patch: adjust context
+  * debian/patches/avoid-uaf.patch: drop; merged upstream
+  * debian/patches/CVE-2018-1000807: drop; merged upstream
+
+ -- John-Mark Bell <jmb@pexip.com>  Wed, 15 Jul 2020 12:32:54 +0100
+
 pyopenssl (19.0.0-1pexip1) pexip; urgency=medium
 
   * Migrate to Buster
