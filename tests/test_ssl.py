@@ -48,7 +48,15 @@ from OpenSSL.crypto import dump_privatekey, load_privatekey
 from OpenSSL.crypto import dump_certificate, load_certificate
 from OpenSSL.crypto import get_elliptic_curves
 
-from OpenSSL.SSL import OPENSSL_VERSION_NUMBER, SSLEAY_VERSION, SSLEAY_CFLAGS
+from OpenSSL.SSL import (
+    OPENSSL_VERSION_NUMBER,
+    SSLEAY_VERSION,
+    SSLEAY_CFLAGS,
+    TLS_METHOD,
+    TLS1_3_VERSION,
+    TLS1_2_VERSION,
+    TLS1_1_VERSION,
+)
 from OpenSSL.SSL import SSLEAY_PLATFORM, SSLEAY_DIR, SSLEAY_BUILT_ON
 from OpenSSL.SSL import SENT_SHUTDOWN, RECEIVED_SHUTDOWN
 from OpenSSL.SSL import (
@@ -128,6 +136,11 @@ try:
     )
 except ImportError:
     SSL_ST_INIT = SSL_ST_BEFORE = SSL_ST_OK = SSL_ST_RENEGOTIATE = None
+
+try:
+    from OpenSSL.SSL import OP_NO_TLSv1_3
+except ImportError:
+    OP_NO_TLSv1_3 = None
 
 from .util import WARNING_TYPE_EXPECTED, NON_ASCII, is_consistent_type
 from .test_crypto import (
@@ -1039,6 +1052,32 @@ class TestContext(object):
         assert all(isinstance(conn, Connection) for conn, line in called)
         assert all(b"CLIENT_RANDOM" in line for conn, line in called)
 
+    def test_set_proto_version(self):
+        if OP_NO_TLSv1_3 is None:
+            high_version = TLS1_2_VERSION
+            low_version = TLS1_1_VERSION
+        else:
+            high_version = TLS1_3_VERSION
+            low_version = TLS1_2_VERSION
+
+        server_context = Context(TLS_METHOD)
+        server_context.use_certificate(
+            load_certificate(FILETYPE_PEM, root_cert_pem)
+        )
+        server_context.use_privatekey(
+            load_privatekey(FILETYPE_PEM, root_key_pem)
+        )
+        server_context.set_min_proto_version(high_version)
+
+        client_context = Context(TLS_METHOD)
+        client_context.set_max_proto_version(low_version)
+
+        with pytest.raises(Error, match="unsupported protocol"):
+            self._handshake_test(server_context, client_context)
+
+        client_context.set_max_proto_version(0)
+        self._handshake_test(server_context, client_context)
+
     def _load_verify_locations_test(self, *args):
         """
         Create a client context which will verify the peer certificate and call
@@ -1887,6 +1926,15 @@ class TestApplicationLayerProtoNegotiation(object):
 
         assert server.get_alpn_proto_negotiated() == b"spdy/2"
         assert client.get_alpn_proto_negotiated() == b"spdy/2"
+
+    def test_alpn_call_failure(self):
+        """
+        SSL_CTX_set_alpn_protos does not like to be called with an empty
+        protocols list. Ensure that we produce a user-visible error.
+        """
+        context = Context(SSLv23_METHOD)
+        with pytest.raises(Error):
+            context.set_alpn_protos([])
 
     def test_alpn_set_on_connection(self):
         """

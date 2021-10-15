@@ -1468,7 +1468,7 @@ class _PKeyInteractionTestsMixin:
 
     def signable(self):
         """
-        Return something with a `set_pubkey`, `set_pubkey`, and `sign` method.
+        Return something with `set_pubkey` and `sign` methods.
         """
         raise NotImplementedError()
 
@@ -1668,6 +1668,7 @@ class TestX509Req(_PKeyInteractionTestsMixin):
         """
         request = X509Req()
         pkey = load_privatekey(FILETYPE_PEM, root_key_pem)
+        request.set_pubkey(pkey)
         request.sign(pkey, GOOD_DIGEST)
         another_pkey = load_privatekey(FILETYPE_PEM, client_key_pem)
         with pytest.raises(Error):
@@ -1680,6 +1681,7 @@ class TestX509Req(_PKeyInteractionTestsMixin):
         """
         request = X509Req()
         pkey = load_privatekey(FILETYPE_PEM, root_key_pem)
+        request.set_pubkey(pkey)
         request.sign(pkey, GOOD_DIGEST)
         assert request.verify(pkey)
 
@@ -1713,7 +1715,12 @@ class TestX509(_PKeyInteractionTestsMixin):
         """
         Create and return a new `X509`.
         """
-        return X509()
+        certificate = X509()
+        # Fill in placeholder validity values. signable only expects to call
+        # set_pubkey and sign.
+        certificate.gmtime_adj_notBefore(-24 * 60 * 60)
+        certificate.gmtime_adj_notAfter(24 * 60 * 60)
+        return certificate
 
     def test_type(self):
         """
@@ -3373,6 +3380,9 @@ class TestNetscapeSPKI(_PKeyInteractionTestsMixin):
         `NetscapeSPKI.b64_encode` encodes the certificate to a base64 blob.
         """
         nspki = NetscapeSPKI()
+        pkey = load_privatekey(FILETYPE_PEM, root_key_pem)
+        nspki.set_pubkey(pkey)
+        nspki.sign(pkey, GOOD_DIGEST)
         blob = nspki.b64_encode()
         assert isinstance(blob, bytes)
 
