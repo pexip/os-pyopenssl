@@ -10,7 +10,7 @@ Homepage: https://pyopenssl.org/
 Vcs-Git: https://salsa.debian.org/python-team/modules/pyopenssl.git
 Vcs-Browser: https://salsa.debian.org/python-team/modules/pyopenssl
 XS-Python-Version: all
-XS-Pexip-Upstream: http://ftp.debian.org/debian/ buster
+XS-Pexip-Upstream: http://deb.debian.org/debian/ bullseye
 
 Package: python-openssl
 Architecture: all
