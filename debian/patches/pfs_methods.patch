@@ -1,8 +1,6 @@
-diff --git a/src/OpenSSL/SSL.py b/src/OpenSSL/SSL.py
-index a257f16..114f5ed 100644
 --- a/src/OpenSSL/SSL.py
 +++ b/src/OpenSSL/SSL.py
-@@ -1009,6 +1009,67 @@ class Context(object):
+@@ -1356,6 +1356,67 @@
              _lib.SSL_CTX_set_tlsext_use_srtp(self._context, profiles) == 0
          )
  
@@ -67,6 +65,6 @@ index a257f16..114f5ed 100644
 +
 +        _lib.SSL_CTX_set_tmp_ecdh(self._context, key)
 +
-     @_requires_npn
-     def set_npn_advertise_callback(self, callback):
+     @_requires_alpn
+     def set_alpn_protos(self, protos):
          """
