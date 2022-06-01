@@ -1,3 +1,58 @@
+pyopenssl (20.0.1-1) unstable; urgency=medium
+
+  [ Debian Janitor ]
+  * Update standards version to 4.5.0, no changes needed.
+
+  [ Ondřej Nový ]
+  * d/control: Update Vcs-* fields with new Debian Python Team Salsa
+    layout.
+
+  [ Sandro Tosi ]
+  * New upstream release.
+  * Use the new Debian Python Team contact name and address
+  * debian/copyright
+    - extend packaging copyright years
+    - update upstream copyright years
+  * debian/control
+    - bump deps on cryptography to >= 3.2
+    - bump Standards-Version to 4.5.1 (no changes needed)
+    - bump dh compat to 13
+  * debian/patches/0001-disable-test_set_default_verify_paths-since-it-tries.patch
+    - refresh patch
+
+ -- Sandro Tosi <morph@debian.org>  Sun, 10 Jan 2021 01:35:33 -0500
+
+pyopenssl (19.1.0-2) unstable; urgency=medium
+
+  * debian/python-openssl-doc.examples
+    - examples have been removed upstream, so lets not try to install them
+
+ -- Sandro Tosi <morph@debian.org>  Thu, 23 Apr 2020 00:48:52 -0400
+
+pyopenssl (19.1.0-1) unstable; urgency=medium
+
+  * New upstream release.
+  * Refresh patches.
+  * Bump python3-cryptography build dependency.
+
+ -- Andrej Shadura <andrewsh@debian.org>  Wed, 22 Apr 2020 22:55:40 +0200
+
+pyopenssl (19.0.0-2) unstable; urgency=medium
+
+  [ Ondřej Nový ]
+  * Use debhelper-compat instead of debian/compat.
+  * Bump Standards-Version to 4.4.1.
+
+  [ Debian Janitor ]
+  * Bump debhelper from old 9 to 12.
+  * Set upstream metadata fields: Bug-Database, Bug-Submit, Repository,
+    Repository-Browse.
+
+  [ Sandro Tosi ]
+  * Drop python2 support; Closes: #937499, #691951
+
+ -- Sandro Tosi <morph@debian.org>  Wed, 01 Apr 2020 21:41:45 -0400
+
 pyopenssl (19.0.0-1pexip2) pexip; urgency=medium
 
   * debian/patches/pfs_methods.patch: adjust context

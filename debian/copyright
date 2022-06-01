@@ -3,11 +3,11 @@ Upstream-Name: pyOpenSSL
 Source: https://github.com/pyca/pyopenssl
 
 Files: *
-Copyright: Copyright (C) 2008-2015 Jean-Paul Calderone, All rights reserved
+Copyright: Copyright (C) 2008-2020 Jean-Paul Calderone, All rights reserved
 License: Apache-2.0
 
 Files: debian/*
-Copyright: Copyright (C) 2008-2019, Sandro Tosi <morph@debian.org>
+Copyright: Copyright (C) 2008-2021, Sandro Tosi <morph@debian.org>
 License: Apache-2.0
 
 License: Apache-2.0

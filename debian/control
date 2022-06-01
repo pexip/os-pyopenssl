@@ -3,36 +3,32 @@ Section: python
 Priority: optional
 Maintainer: Pexip AS <packaging@pexip.com>
 XSBC-Pexip-Original-Maintainer: Sandro Tosi <morph@debian.org>
-XSBC-Pexip-Original-Uploaders: Debian Python Modules Team <python-modules-team@lists.alioth.debian.org>
-Build-Depends: debhelper (>= 9), python-all, python3-all, dh-python, python3-sphinx (>= 1.0.7+dfsg), python-setuptools, python3-setuptools, python-cryptography (>= 2.3), python3-cryptography (>= 2.3), python-six, python3-six, python-pytest (>= 3.0.1), python3-pytest (>= 3.0.1), python-cffi, python3-cffi, python3-sphinx-rtd-theme, python-pretend, python3-pretend, python-flaky, python3-flaky
-Standards-Version: 4.3.0
+XSBC-Pexip-Original-Uploaders: Debian Python Team <team+python@tracker.debian.org>,
+Build-Depends: debhelper-compat (= 13),
+               dh-python,
+               python3-all,
+               python3-cffi,
+               python3-cryptography (>= 3.2~),
+               python3-flaky,
+               python3-pretend,
+               python3-pytest (>= 3.0.1),
+               python3-setuptools,
+               python3-six,
+               python3-sphinx (>= 1.0.7+dfsg),
+               python3-sphinx-rtd-theme,
+Standards-Version: 4.5.1
 Homepage: https://pyopenssl.org/
-Vcs-Git: https://salsa.debian.org/python-team/modules/pyopenssl.git
-Vcs-Browser: https://salsa.debian.org/python-team/modules/pyopenssl
+Vcs-Git: https://salsa.debian.org/python-team/packages/pyopenssl.git
+Vcs-Browser: https://salsa.debian.org/python-team/packages/pyopenssl
 XS-Python-Version: all
 XS-Pexip-Upstream: http://deb.debian.org/debian/ bullseye
-
-Package: python-openssl
-Architecture: all
-Depends: ${python:Depends}, ${shlibs:Depends}, ${misc:Depends}, python-cryptography (>= 2.3)
-Suggests: python-openssl-doc, python-openssl-dbg
-Description: Python 2 wrapper around the OpenSSL library
- High-level wrapper around a subset of the OpenSSL library, includes
- .
-   * SSL.Connection objects, wrapping the methods of Python's portable
-     sockets
-   * Callbacks written in Python
-   * Extensive error-handling mechanism, mirroring OpenSSL's error
-     codes
- .
- A lot of the object methods do nothing more than calling a
- corresponding function in the OpenSSL library.
 
 Package: python-openssl-doc
 Section: doc
 Architecture: all
-Depends: ${misc:Depends}, ${sphinxdoc:Depends}
-Suggests: python-openssl, python3-openssl
+Depends: ${misc:Depends},
+         ${sphinxdoc:Depends},
+Suggests: python3-openssl,
 Description: Python wrapper around the OpenSSL library (documentation package)
  High-level wrapper around a subset of the OpenSSL library, includes
  .
@@ -49,8 +45,12 @@ Description: Python wrapper around the OpenSSL library (documentation package)
 
 Package: python3-openssl
 Architecture: all
-Depends: ${python3:Depends}, ${shlibs:Depends}, ${misc:Depends}, python3-cryptography (>= 2.3)
-Suggests: python-openssl-doc, python3-openssl-dbg
+Depends: python3-cryptography (>= 3.2~),
+         ${misc:Depends},
+         ${python3:Depends},
+         ${shlibs:Depends},
+Suggests: python-openssl-doc,
+          python3-openssl-dbg,
 Description: Python 3 wrapper around the OpenSSL library
  High-level wrapper around a subset of the OpenSSL library, includes
  .
