@@ -1,8 +1,8 @@
 --- a/src/OpenSSL/SSL.py
 +++ b/src/OpenSSL/SSL.py
-@@ -1356,6 +1356,67 @@
-             _lib.SSL_CTX_set_tlsext_use_srtp(self._context, profiles) == 0
-         )
+@@ -1431,6 +1431,67 @@
+         _lib.SSL_CTX_set_next_proto_select_cb(
+             self._context, self._npn_select_callback, _ffi.NULL)
  
 +    def set_tmp_dh_from_pem(self, pem):
 +        """
