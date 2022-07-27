@@ -1,3 +1,9 @@
+pyopenssl (20.0.1.really.19.0.0-0pexip1) pexip-bullseye; urgency=medium
+
+  * Revert to 19.0.0 because 20.0 drops OpenSSL 1.0.x support.
+
+ -- Mark Hymers <mark.hymers@pexip.com>  Wed, 27 Jul 2022 09:29:16 +0100
+
 pyopenssl (20.0.1-1pexip2) pexip-bullseye; urgency=medium
 
   * Main bullseye build
