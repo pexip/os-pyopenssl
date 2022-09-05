@@ -1,3 +1,9 @@
+pyopenssl (20.0.1.really.19.0.0-0pexip2) pexip-bullseye; urgency=medium
+
+  * Bullseye rebuild for ARM64 inclusion
+
+ -- Mark Hymers <mark.hymers@pexip.com>  Mon, 05 Sep 2022 10:35:09 +0100
+
 pyopenssl (20.0.1.really.19.0.0-0pexip1) pexip-bullseye; urgency=medium
 
   * Revert to 19.0.0 because 20.0 drops OpenSSL 1.0.x support.
