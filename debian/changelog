@@ -1,3 +1,19 @@
+pyopenssl (21.0.0-1pexip1) pexip; urgency=medium
+
+  * New upstream release
+
+ -- John-Mark Bell <jmb@pexip.com>  Fri, 25 Nov 2022 16:01:47 +0000
+
+pyopenssl (21.0.0-1) unstable; urgency=medium
+
+  * New upstream release.
+  * debian/watch
+    - track github releases
+  * debian/control
+    - bump cryptography b-d to >= 3.3
+
+ -- Sandro Tosi <morph@debian.org>  Fri, 15 Oct 2021 14:17:05 -0400
+
 pyopenssl (20.0.1.really.19.0.0-0pexip2) pexip-bullseye; urgency=medium
 
   * Bullseye rebuild for ARM64 inclusion
