@@ -6,7 +6,6 @@ XSBC-Pexip-Original-Maintainer: Sandro Tosi <morph@debian.org>
 XSBC-Pexip-Original-Uploaders: Debian Python Team <team+python@tracker.debian.org>,
 Build-Depends: debhelper-compat (= 13),
                dh-python,
-               libssl-dev (>= 3),
                python3-all,
                python3-cffi,
                python3-cryptography (>= 3.3),
