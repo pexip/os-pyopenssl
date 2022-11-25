@@ -22,7 +22,7 @@ Homepage: https://pyopenssl.org/
 Vcs-Git: https://salsa.debian.org/python-team/packages/pyopenssl.git
 Vcs-Browser: https://salsa.debian.org/python-team/packages/pyopenssl
 XS-Python-Version: all
-XS-Pexip-Upstream: http://deb.debian.org/debian/ bullseye
+XS-Pexip-Upstream: http://deb.debian.org/debian/ bookworm
 
 Package: python-openssl-doc
 Section: doc
