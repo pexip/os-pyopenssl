@@ -22,7 +22,7 @@ override_dh_auto_build:
 override_dh_auto_test:
 ifeq ($(filter nocheck,$(DEB_BUILD_OPTIONS)),)
 	# run tests
-	-for py in $(PY3VERS); do  \
+	for py in $(PY3VERS); do  \
 	    LIB=$$(python$$py -c "from distutils.command.build import build ; from distutils.core import Distribution ; b = build(Distribution()) ; b.finalize_options() ; print(b.build_purelib)") ; \
 	    PYTHONPATH=$$LIB py.test-3 ;\
 	done
