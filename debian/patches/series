@@ -1,3 +1,4 @@
 0001-disable-test_set_default_verify_paths-since-it-tries.patch
 0002-pass-PYTHONPATH-when-building-HTML-doc.patch
 #pfs_methods.patch
+openssl3.patch

@@ -1,0 +1,896 @@
+diff --git a/src/OpenSSL/SSL.py b/src/OpenSSL/SSL.py
+index e71b044..b265a9d 100644
+--- a/src/OpenSSL/SSL.py
++++ b/src/OpenSSL/SSL.py
+@@ -133,11 +133,11 @@ except NameError:
+ 
+ 
+ OPENSSL_VERSION_NUMBER = _lib.OPENSSL_VERSION_NUMBER
+-SSLEAY_VERSION = _lib.SSLEAY_VERSION
+-SSLEAY_CFLAGS = _lib.SSLEAY_CFLAGS
+-SSLEAY_PLATFORM = _lib.SSLEAY_PLATFORM
+-SSLEAY_DIR = _lib.SSLEAY_DIR
+-SSLEAY_BUILT_ON = _lib.SSLEAY_BUILT_ON
++SSLEAY_VERSION = _lib.OPENSSL_VERSION
++SSLEAY_CFLAGS = _lib.OPENSSL_CFLAGS
++SSLEAY_PLATFORM = _lib.OPENSSL_PLATFORM
++SSLEAY_DIR = _lib.OPENSSL_DIR
++SSLEAY_BUILT_ON = _lib.OPENSSL_BUILT_ON
+ 
+ SENT_SHUTDOWN = _lib.SSL_SENT_SHUTDOWN
+ RECEIVED_SHUTDOWN = _lib.SSL_RECEIVED_SHUTDOWN
+@@ -575,7 +575,7 @@ def SSLeay_version(type):
+ 
+     :param type: One of the :const:`SSLEAY_` constants defined in this module.
+     """
+-    return _ffi.string(_lib.SSLeay_version(type))
++    return _ffi.string(_lib.OpenSSL_version(type))
+ 
+ 
+ def _make_requires(flag, error):
+@@ -671,8 +671,9 @@ class Context(object):
+         # Set SSL_CTX_set_ecdh_auto so that the ECDH curve will be
+         # auto-selected. This function was added in 1.0.2 and made a noop in
+         # 1.1.0+ (where it is set automatically).
+-        res = _lib.SSL_CTX_set_ecdh_auto(context, 1)
+-        _openssl_assert(res == 1)
++        if not _lib.CRYPTOGRAPHY_OPENSSL_300_OR_GREATER:
++            res = _lib.SSL_CTX_set_ecdh_auto(context, 1)
++            _openssl_assert(res == 1)
+ 
+         self._context = context
+         self._passphrase_helper = None
+@@ -1132,9 +1133,17 @@ class Context(object):
+             _raise_current_error()
+         bio = _ffi.gc(bio, _lib.BIO_free)
+ 
+-        dh = _lib.PEM_read_bio_DHparams(bio, _ffi.NULL, _ffi.NULL, _ffi.NULL)
+-        dh = _ffi.gc(dh, _lib.DH_free)
+-        res = _lib.SSL_CTX_set_tmp_dh(self._context, dh)
++        pkey = _lib.PEM_read_bio_Parameters(bio, _ffi.NULL)
++        _openssl_assert(pkey != _ffi.NULL)
++        if _lib.CRYPTOGRAPHY_OPENSSL_300_OR_GREATER:
++            res = _lib.SSL_CTX_set0_tmp_dh_pkey(self._context, pkey)
++            if res != 1:
++                _lib.EVP_PKEY_free(pkey)
++        else:
++            pkey = _ffi.gc(pkey, _lib.EVP_PKEY_free)
++            dh = _lib.EVP_PKEY_get0_DH(pkey)
++            _openssl_assert(dh != _ffi.NULL)
++            res = _lib.SSL_CTX_set_tmp_dh(self._context, dh)
+         _openssl_assert(res == 1)
+ 
+     def set_tmp_ecdh(self, curve):
+@@ -1147,7 +1156,11 @@ class Context(object):
+ 
+         :return: None
+         """
+-        _lib.SSL_CTX_set_tmp_ecdh(self._context, curve._to_EC_KEY())
++        if _lib.CRYPTOGRAPHY_OPENSSL_300_OR_GREATER:
++            nid = _ffi.new("int *", curve._nid)
++            _lib.SSL_CTX_set1_curves(self._context, nid, 1)
++        else:
++            _lib.SSL_CTX_set_tmp_ecdh(self._context, curve._to_EC_KEY())
+ 
+     def set_cipher_list(self, cipher_list):
+         """
+@@ -2188,7 +2201,7 @@ class Connection(object):
+ 
+         :return: The peer's certificate
+         """
+-        cert = _lib.SSL_get_peer_certificate(self._ssl)
++        cert = _lib.SSL_get1_peer_certificate(self._ssl)
+         if cert != _ffi.NULL:
+             return X509._from_raw_x509_ptr(cert)
+         return None
+@@ -2502,4 +2515,5 @@ class Connection(object):
+ 
+ # This is similar to the initialization calls at the end of OpenSSL/crypto.py
+ # but is exercised mostly by the Context initializer.
+-_lib.SSL_library_init()
++if hasattr(_lib, "SSL_library_init"):
++    _lib.SSL_library_init()
+diff --git a/src/OpenSSL/_util.py b/src/OpenSSL/_util.py
+index 53c0b9e..a2c81f1 100644
+--- a/src/OpenSSL/_util.py
++++ b/src/OpenSSL/_util.py
+@@ -46,10 +46,14 @@ def exception_from_error_queue(exception_type):
+         error = lib.ERR_get_error()
+         if error == 0:
+             break
++        func = ""
++        if not lib.CRYPTOGRAPHY_OPENSSL_300_OR_GREATER:
++            func = text(lib.ERR_func_error_string(error)),
++
+         errors.append(
+             (
+                 text(lib.ERR_lib_error_string(error)),
+-                text(lib.ERR_func_error_string(error)),
++                func,
+                 text(lib.ERR_reason_error_string(error)),
+             )
+         )
+diff --git a/src/OpenSSL/crypto.py b/src/OpenSSL/crypto.py
+index eda4af6..78e64c3 100644
+--- a/src/OpenSSL/crypto.py
++++ b/src/OpenSSL/crypto.py
+@@ -182,7 +182,7 @@ def _get_asn1_time(timestamp):
+     elif (
+         _lib.ASN1_STRING_type(string_timestamp) == _lib.V_ASN1_GENERALIZEDTIME
+     ):
+-        return _ffi.string(_lib.ASN1_STRING_data(string_timestamp))
++        return _ffi.string(_lib.ASN1_STRING_get0_data(string_timestamp))
+     else:
+         generalized_timestamp = _ffi.new("ASN1_GENERALIZEDTIME**")
+         _lib.ASN1_TIME_to_generalizedtime(timestamp, generalized_timestamp)
+@@ -201,7 +201,7 @@ def _get_asn1_time(timestamp):
+             string_timestamp = _ffi.cast(
+                 "ASN1_STRING*", generalized_timestamp[0]
+             )
+-            string_data = _lib.ASN1_STRING_data(string_timestamp)
++            string_data = _lib.ASN1_STRING_get0_data(string_timestamp)
+             string_result = _ffi.string(string_data)
+             _lib.ASN1_GENERALIZEDTIME_free(generalized_timestamp[0])
+             return string_result
+@@ -229,8 +229,7 @@ class PKey(object):
+     _initialized = True
+ 
+     def __init__(self):
+-        pkey = _lib.EVP_PKEY_new()
+-        self._pkey = _ffi.gc(pkey, _lib.EVP_PKEY_free)
++        self._pkey = None
+         self._initialized = False
+ 
+     def to_cryptography_key(self):
+@@ -249,6 +248,9 @@ class PKey(object):
+             load_der_public_key,
+         )
+ 
++        if not self._initialized:
++            raise ValueError("PKey object not initialized")
++
+         backend = _get_backend()
+         if self._only_public:
+             der = dump_publickey(FILETYPE_ASN1, self)
+@@ -322,39 +324,27 @@ class PKey(object):
+         if not isinstance(bits, int):
+             raise TypeError("bits must be an integer")
+ 
++        backend = _get_backend()
++
+         if type == TYPE_RSA:
+             if bits <= 0:
+                 raise ValueError("Invalid number of bits")
+ 
+-            # TODO Check error return
+-            exponent = _lib.BN_new()
+-            exponent = _ffi.gc(exponent, _lib.BN_free)
+-            _lib.BN_set_word(exponent, _lib.RSA_F4)
+-
+-            rsa = _lib.RSA_new()
+-
+-            result = _lib.RSA_generate_key_ex(rsa, bits, exponent, _ffi.NULL)
+-            _openssl_assert(result == 1)
+-
+-            result = _lib.EVP_PKEY_assign_RSA(self._pkey, rsa)
+-            _openssl_assert(result == 1)
++            crypto_key = rsa.generate_private_key(_lib.RSA_F4, bits, backend)
++            tmp_pkey = PKey.from_cryptography_key(crypto_key)
+ 
+         elif type == TYPE_DSA:
+-            dsa = _lib.DSA_new()
+-            _openssl_assert(dsa != _ffi.NULL)
+-
+-            dsa = _ffi.gc(dsa, _lib.DSA_free)
+-            res = _lib.DSA_generate_parameters_ex(
+-                dsa, bits, _ffi.NULL, 0, _ffi.NULL, _ffi.NULL, _ffi.NULL
+-            )
+-            _openssl_assert(res == 1)
++            
++            crypto_key = dsa.generate_private_key(bits, backend)
++            tmp_pkey = PKey.from_cryptography_key(crypto_key)
+ 
+-            _openssl_assert(_lib.DSA_generate_key(dsa) == 1)
+-            _openssl_assert(_lib.EVP_PKEY_set1_DSA(self._pkey, dsa) == 1)
+         else:
+             raise Error("No such key type")
+ 
+-        self._initialized = True
++        # Move pkey contents to this object
++        self._only_public = tmp_pkey._only_public
++        self._pkey, tmp_pkey._pkey = tmp_pkey._pkey, None
++        self._initialized = tmp_pkey._initialized
+ 
+     def check(self):
+         """
+@@ -369,15 +359,20 @@ class PKey(object):
+         :raise TypeError: if the key is of a type which cannot be checked.
+             Only RSA keys can currently be checked.
+         """
++        if not self._initialized:
++            raise TypeError("PKey object not initialized")
++
+         if self._only_public:
+             raise TypeError("public key only")
+ 
+         if _lib.EVP_PKEY_type(self.type()) != _lib.EVP_PKEY_RSA:
+             raise TypeError("key type unsupported")
+ 
+-        rsa = _lib.EVP_PKEY_get1_RSA(self._pkey)
+-        rsa = _ffi.gc(rsa, _lib.RSA_free)
+-        result = _lib.RSA_check_key(rsa)
++        ctx = _lib.EVP_PKEY_CTX_new(self._pkey, _ffi.NULL)
++        _openssl_assert(ctx != _ffi.NULL)
++        ctx = _ffi.gc(ctx, _lib.EVP_PKEY_CTX_free)
++
++        result = _lib.EVP_PKEY_check(ctx)
+         if result == 1:
+             return True
+         _raise_current_error()
+@@ -388,7 +383,35 @@ class PKey(object):
+ 
+         :return: The type of the key.
+         """
+-        return _lib.EVP_PKEY_id(self._pkey)
++        if not self._initialized:
++            return _lib.EVP_PKEY_NONE
++
++        if _lib.CRYPTOGRAPHY_OPENSSL_300_OR_GREATER:
++            if _lib.EVP_PKEY_is_a(self._pkey, b"RSA-PSS"):
++                key_type = _lib.EVP_PKEY_RSA_PSS
++            elif _lib.EVP_PKEY_is_a(self._pkey, b"RSA"):
++                key_type = _lib.EVP_PKEY_RSA
++            elif _lib.EVP_PKEY_is_a(self._pkey, b"DSA"):
++                key_type = _lib.EVP_PKEY_DSA
++            elif _lib.EVP_PKEY_is_a(self._pkey, b"EC"):
++                key_type = _lib.EVP_PKEY_EC
++            elif _lib.EVP_PKEY_is_a(self._pkey, b"ED25519"):
++                key_type = _lib.EVP_PKEY_ED25519
++            elif _lib.EVP_PKEY_is_a(self._pkey, b"ED448"):
++                key_type = _lib.EVP_PKEY_ED448
++            elif _lib.EVP_PKEY_is_a(self._pkey, b"X448"):
++                key_type = _lib.EVP_PKEY_X448
++            elif _lib.EVP_PKEY_is_a(self._pkey, b"X25519"):
++                key_type = _lib.EVP_PKEY_X25519
++            elif _lib.EVP_PKEY_is_a(self._pkey, b"DH"):
++                key_type = _lib.EVP_PKEY_DH
++            elif _lib.EVP_PKEY_is_a(self._pkey, b"DHX"):
++                key_type = _lib.EVP_PKEY_DHX
++            else:
++                key_type = _lib.EVP_PKEY_NONE
++        else:
++            key_type = _lib.EVP_PKEY_id(self._pkey)
++        return key_type
+ 
+     def bits(self):
+         """
+@@ -396,6 +419,9 @@ class PKey(object):
+ 
+         :return: The number of bits of the key.
+         """
++        if not self._initialized:
++            return 0
++
+         return _lib.EVP_PKEY_bits(self._pkey)
+ 
+ 
+@@ -500,6 +526,10 @@ class _EllipticCurve(object):
+         The structure is automatically garbage collected when the Python object
+         is garbage collected.
+         """
++        if _lib.CRYPTOGRAPHY_OPENSSL_300_OR_GREATER:
++            raise ValueError(
++                "Conversion to EC_KEY not supported on OpenSSL 3 or later"
++            )
+         key = self._lib.EC_KEY_new_by_curve_name(self._nid)
+         return _ffi.gc(key, _lib.EC_KEY_free)
+ 
+@@ -693,7 +723,9 @@ class X509Name(object):
+         :return: The (integer) hash of this name.
+         :rtype: :py:class:`int`
+         """
+-        return _lib.X509_NAME_hash(self._name)
++        return _lib.X509_NAME_hash_ex(
++            self._name, _ffi.NULL, _ffi.NULL, _ffi.NULL
++        )
+ 
+     def der(self):
+         """
+@@ -730,7 +762,7 @@ class X509Name(object):
+             # ffi.string does not handle strings containing NULL bytes
+             # (which may have been generated by old, broken software)
+             value = _ffi.buffer(
+-                _lib.ASN1_STRING_data(fval), _lib.ASN1_STRING_length(fval)
++                _lib.ASN1_STRING_get0_data(fval), _lib.ASN1_STRING_length(fval)
+             )[:]
+             result.append((_ffi.string(name), value))
+ 
+@@ -884,7 +916,7 @@ class X509Extension(object):
+         """
+         octet_result = _lib.X509_EXTENSION_get_data(self._extension)
+         string_result = _ffi.cast("ASN1_STRING*", octet_result)
+-        char_result = _lib.ASN1_STRING_data(string_result)
++        char_result = _lib.ASN1_STRING_get0_data(string_result)
+         result_length = _lib.ASN1_STRING_length(string_result)
+         return _ffi.buffer(char_result, result_length)[:]
+ 
+@@ -944,6 +976,8 @@ class X509Req(object):
+ 
+         :return: ``None``
+         """
++        if not pkey._initialized:
++            raise ValueError("PKey object is not initialized")
+         set_result = _lib.X509_REQ_set_pubkey(self._req, pkey._pkey)
+         _openssl_assert(set_result == 1)
+ 
+@@ -1094,7 +1128,13 @@ class X509Req(object):
+         if not isinstance(pkey, PKey):
+             raise TypeError("pkey must be a PKey instance")
+ 
+-        result = _lib.X509_REQ_verify(self._req, pkey._pkey)
++        key = pkey._pkey
++        if not pkey._initialized:
++            key = _lib.EVP_PKEY_new()
++            _openssl_assert(key != _ffi.NULL)
++            key = _ffi.gc(key, _lib.EVP_PKEY_free)
++
++        result = _lib.X509_REQ_verify(self._req, key)
+         if result <= 0:
+             _raise_current_error()
+ 
+@@ -1207,6 +1247,9 @@ class X509(object):
+         if not isinstance(pkey, PKey):
+             raise TypeError("pkey must be a PKey instance")
+ 
++        if not pkey._initialized:
++            raise ValueError("PKey object is not initialized")
++
+         set_result = _lib.X509_set_pubkey(self._x509, pkey._pkey)
+         _openssl_assert(set_result == 1)
+ 
+@@ -2021,6 +2064,9 @@ def dump_publickey(type, pkey):
+     else:
+         raise ValueError("type argument must be FILETYPE_PEM or FILETYPE_ASN1")
+ 
++    if not pkey._initialized:
++        raise ValueError("PKey object is not initialized")
++
+     result_code = write_bio(bio, pkey._pkey)
+     if result_code != 1:  # pragma: no cover
+         _raise_current_error()
+@@ -2049,6 +2095,9 @@ def dump_privatekey(type, pkey, cipher=None, passphrase=None):
+     if not isinstance(pkey, PKey):
+         raise TypeError("pkey must be a PKey")
+ 
++    if not pkey._initialized:
++        raise ValueError("PKey object is not initialized")
++
+     if cipher is not None:
+         if passphrase is None:
+             raise TypeError(
+@@ -2076,11 +2125,18 @@ def dump_privatekey(type, pkey, cipher=None, passphrase=None):
+     elif type == FILETYPE_ASN1:
+         result_code = _lib.i2d_PrivateKey_bio(bio, pkey._pkey)
+     elif type == FILETYPE_TEXT:
+-        if _lib.EVP_PKEY_id(pkey._pkey) != _lib.EVP_PKEY_RSA:
++        if _lib.EVP_PKEY_type(pkey.type()) != _lib.EVP_PKEY_RSA:
+             raise TypeError("Only RSA keys are supported for FILETYPE_TEXT")
+ 
+-        rsa = _ffi.gc(_lib.EVP_PKEY_get1_RSA(pkey._pkey), _lib.RSA_free)
+-        result_code = _lib.RSA_print(bio, rsa, 0)
++        result_code = _lib.EVP_PKEY_print_params(bio, pkey._pkey, 0, _ffi.NULL)
++        if result_code == 1:
++            result_code = _lib.EVP_PKEY_print_public(
++                bio, pkey._pkey, 0, _ffi.NULL
++            )
++        if result_code == 1:
++            result_code =_lib.EVP_PKEY_print_private(
++                bio, pkey._pkey, 0, _ffi.NULL
++            )
+     else:
+         raise ValueError(
+             "type argument must be FILETYPE_PEM, FILETYPE_ASN1, or "
+@@ -2323,7 +2379,7 @@ class CRL(object):
+         revoked_stack = _lib.X509_CRL_get_REVOKED(self._crl)
+         for i in range(_lib.sk_X509_REVOKED_num(revoked_stack)):
+             revoked = _lib.sk_X509_REVOKED_value(revoked_stack, i)
+-            revoked_copy = _lib.Cryptography_X509_REVOKED_dup(revoked)
++            revoked_copy = _lib.X509_REVOKED_dup(revoked)
+             pyrev = Revoked.__new__(Revoked)
+             pyrev._revoked = _ffi.gc(revoked_copy, _lib.X509_REVOKED_free)
+             results.append(pyrev)
+@@ -2341,7 +2397,7 @@ class CRL(object):
+         :param Revoked revoked: The new revocation.
+         :return: ``None``
+         """
+-        copy = _lib.Cryptography_X509_REVOKED_dup(revoked._revoked)
++        copy = _lib.X509_REVOKED_dup(revoked._revoked)
+         _openssl_assert(copy != _ffi.NULL)
+ 
+         add_result = _lib.X509_CRL_add0_revoked(self._crl, copy)
+@@ -2389,7 +2445,7 @@ class CRL(object):
+         :param bytes when: A timestamp string.
+         :return: ``None``
+         """
+-        return self._set_boundary_time(_lib.X509_CRL_get_lastUpdate, when)
++        return self._set_boundary_time(_lib.X509_CRL_get0_lastUpdate, when)
+ 
+     def set_nextUpdate(self, when):
+         """
+@@ -2404,7 +2460,7 @@ class CRL(object):
+         :param bytes when: A timestamp string.
+         :return: ``None``
+         """
+-        return self._set_boundary_time(_lib.X509_CRL_get_nextUpdate, when)
++        return self._set_boundary_time(_lib.X509_CRL_get0_nextUpdate, when)
+ 
+     def sign(self, issuer_cert, issuer_key, digest):
+         """
+@@ -2423,6 +2479,9 @@ class CRL(object):
+         :param PKey issuer_key: The issuer's private key.
+         :param bytes digest: The digest method to sign the CRL with.
+         """
++        if not issuer_key._initialized:
++            raise ValueError("PKey object not initialized")
++
+         digest_obj = _lib.EVP_get_digestbyname(digest)
+         _openssl_assert(digest_obj != _ffi.NULL)
+         _lib.X509_CRL_set_issuer_name(
+@@ -2458,6 +2517,12 @@ class CRL(object):
+         if digest is _UNSPECIFIED:
+             raise TypeError("digest must be provided")
+ 
++        pkey = key._pkey
++        if not key._initialized:
++            pkey = _lib.EVP_PKEY_new()
++            _openssl_assert(pkey != _ffi.NULL)
++            pkey = _ffi.gc(pkey, _lib.EVP_PKEY_free)
++
+         digest_obj = _lib.EVP_get_digestbyname(digest)
+         if digest_obj == _ffi.NULL:
+             raise ValueError("No such digest method")
+@@ -2471,16 +2536,16 @@ class CRL(object):
+         _openssl_assert(sometime != _ffi.NULL)
+ 
+         _lib.X509_gmtime_adj(sometime, 0)
+-        _lib.X509_CRL_set_lastUpdate(self._crl, sometime)
++        _lib.X509_CRL_set1_lastUpdate(self._crl, sometime)
+ 
+         _lib.X509_gmtime_adj(sometime, days * 24 * 60 * 60)
+-        _lib.X509_CRL_set_nextUpdate(self._crl, sometime)
++        _lib.X509_CRL_set1_nextUpdate(self._crl, sometime)
+ 
+         _lib.X509_CRL_set_issuer_name(
+             self._crl, _lib.X509_get_subject_name(cert._x509)
+         )
+ 
+-        sign_result = _lib.X509_CRL_sign(self._crl, key._pkey, digest_obj)
++        sign_result = _lib.X509_CRL_sign(self._crl, pkey, digest_obj)
+         if not sign_result:
+             _raise_current_error()
+ 
+@@ -2760,6 +2825,9 @@ class NetscapeSPKI(object):
+         :raises OpenSSL.crypto.Error: If the signature is invalid, or there was
+             a problem verifying the signature.
+         """
++        if not key._initialized:
++            raise ValueError("PKey object not initialized")
++
+         answer = _lib.NETSCAPE_SPKI_verify(self._spki, key._pkey)
+         if answer <= 0:
+             _raise_current_error()
+@@ -2798,6 +2866,9 @@ class NetscapeSPKI(object):
+         :param pkey: The public key
+         :return: ``None``
+         """
++        if not pkey._initialized:
++            raise ValueError("PKey object not initialized")
++
+         set_result = _lib.NETSCAPE_SPKI_set_pubkey(self._spki, pkey._pkey)
+         _openssl_assert(set_result == 1)
+ 
+@@ -3012,12 +3083,15 @@ def sign(pkey, data, digest):
+     """
+     data = _text_to_bytes_and_warn("data", data)
+ 
++    if not pkey._initialized:
++        raise ValueError("PKey object not initialized")
++
+     digest_obj = _lib.EVP_get_digestbyname(_byte_string(digest))
+     if digest_obj == _ffi.NULL:
+         raise ValueError("No such digest method")
+ 
+-    md_ctx = _lib.Cryptography_EVP_MD_CTX_new()
+-    md_ctx = _ffi.gc(md_ctx, _lib.Cryptography_EVP_MD_CTX_free)
++    md_ctx = _lib.EVP_MD_CTX_new()
++    md_ctx = _ffi.gc(md_ctx, _lib.EVP_MD_CTX_free)
+ 
+     _lib.EVP_SignInit(md_ctx, digest_obj)
+     _lib.EVP_SignUpdate(md_ctx, data, len(data))
+@@ -3057,8 +3131,8 @@ def verify(cert, signature, data, digest):
+     _openssl_assert(pkey != _ffi.NULL)
+     pkey = _ffi.gc(pkey, _lib.EVP_PKEY_free)
+ 
+-    md_ctx = _lib.Cryptography_EVP_MD_CTX_new()
+-    md_ctx = _ffi.gc(md_ctx, _lib.Cryptography_EVP_MD_CTX_free)
++    md_ctx = _lib.EVP_MD_CTX_new()
++    md_ctx = _ffi.gc(md_ctx, _lib.EVP_MD_CTX_free)
+ 
+     _lib.EVP_VerifyInit(md_ctx, digest_obj)
+     _lib.EVP_VerifyUpdate(md_ctx, data, len(data))
+@@ -3276,11 +3350,13 @@ load_pkcs12 = utils.deprecated(
+ # the Python runtime has already done some initialization of the underlying
+ # OpenSSL library (and is linked against the same one that cryptography is
+ # using)).
+-_lib.OpenSSL_add_all_algorithms()
++if hasattr(_lib, "OpenSSL_add_all_algorithms"):
++    _lib.OpenSSL_add_all_algorithms()
+ 
+ # This is similar but exercised mainly by exception_from_error_queue.  It calls
+ # both ERR_load_crypto_strings() and ERR_load_SSL_strings().
+-_lib.SSL_load_error_strings()
++if hasattr(_lib, "SSL_load_error_strings"):
++    _lib.SSL_load_error_strings()
+ 
+ 
+ # Set the default string mask to match OpenSSL upstream (since 2005) and
+diff --git a/tests/test_crypto.py b/tests/test_crypto.py
+index ef3429d..7d91322 100644
+--- a/tests/test_crypto.py
++++ b/tests/test_crypto.py
+@@ -1151,10 +1151,10 @@ class TestPKey(object):
+         `PKey.generate_key` generates a DSA key when passed `TYPE_DSA` as a
+         type and a reasonable number of bits.
+         """
+-        # 512 is a magic number.  The DSS (Digital Signature Standard)
+-        # allows a minimum of 512 bits for DSA.  DSA_generate_parameters
+-        # will silently promote any value below 512 to 512.
+-        bits = 512
++        # 1024 is a magic number.  The DSS (Digital Signature Standard)
++        # allows a minimum of 1024 bits for DSA.  DSA_generate_parameters
++        # will silently promote any value below 1024 to 1024.
++        bits = 1024
+         key = PKey()
+         key.generate_key(TYPE_DSA, bits)
+         assert key.type() == TYPE_DSA
+@@ -1168,7 +1168,7 @@ class TestPKey(object):
+         generate new keys.
+         """
+         key = PKey()
+-        for type, bits in [(TYPE_RSA, 512), (TYPE_DSA, 576)]:
++        for type, bits in [(TYPE_RSA, 512), (TYPE_DSA, 1024)]:
+             key.generate_key(type, bits)
+             assert key.type() == type
+             assert key.bits() == bits
+@@ -2036,8 +2036,8 @@ class TestX509(_PKeyInteractionTestsMixin):
+             b"DNS:altnull.python.org\x00example.com, "
+             b"email:null@python.org\x00user@example.org, "
+             b"URI:http://null.python.org\x00http://example.org, "
+-            b"IP Address:192.0.2.1, IP Address:2001:DB8:0:0:0:0:0:1\n"
+-            == str(ext).encode("ascii")
++            b"IP Address:192.0.2.1, IP Address:2001:DB8:0:0:0:0:0:1"
++            == str(ext).strip().encode("ascii")
+         )
+ 
+     def test_invalid_digest_algorithm(self):
+@@ -2967,7 +2967,7 @@ class TestFunction(object):
+         not RSA.
+         """
+         key = PKey()
+-        key.generate_key(TYPE_DSA, 512)
++        key.generate_key(TYPE_DSA, 1024)
+         with pytest.raises(TypeError):
+             dump_privatekey(FILETYPE_TEXT, key)
+ 
+@@ -4051,7 +4051,9 @@ class TestX509StoreContext(object):
+         with pytest.raises(X509StoreContextError) as exc:
+             store_ctx.verify_certificate()
+ 
+-        assert exc.value.args[0][2] == "self signed certificate"
++        assert exc.value.args[0][2] in (
++            "self signed certificate", "self-signed certificate"
++        )
+         assert exc.value.certificate.get_subject().CN == "Testing Root CA"
+ 
+     def test_invalid_chain_no_root(self):
+@@ -4396,7 +4398,11 @@ class TestEllipticCurve(object):
+         # It's not easy to assert anything about this object.  However, see
+         # leakcheck/crypto.py for a test that demonstrates it at least does
+         # not leak memory.
+-        curve._to_EC_KEY()
++        if _lib.CRYPTOGRAPHY_OPENSSL_300_OR_GREATER:
++            with pytest.raises(ValueError):
++                curve._to_EC_KEY()
++        else:
++            curve._to_EC_KEY()
+ 
+ 
+ class EllipticCurveFactory(object):
+diff --git a/tests/test_ssl.py b/tests/test_ssl.py
+index e604164..c064d84 100644
+--- a/tests/test_ssl.py
++++ b/tests/test_ssl.py
+@@ -56,6 +56,7 @@ from OpenSSL.SSL import (
+     TLS1_3_VERSION,
+     TLS1_2_VERSION,
+     TLS1_1_VERSION,
++    TLS1_VERSION,
+ )
+ from OpenSSL.SSL import SSLEAY_PLATFORM, SSLEAY_DIR, SSLEAY_BUILT_ON
+ from OpenSSL.SSL import SENT_SHUTDOWN, RECEIVED_SHUTDOWN
+@@ -525,14 +526,25 @@ class TestContext(object):
+         """
+         with pytest.raises(Error) as excinfo:
+             context.set_cipher_list(b"imaginary-cipher")
+-        assert excinfo.value.args == (
+-            [
+-                (
+-                    "SSL routines",
+-                    "SSL_CTX_set_cipher_list",
+-                    "no cipher match",
+-                )
+-            ],
++        assert excinfo.value.args in (
++            (
++                [
++                    (
++                        "SSL routines",
++                        "SSL_CTX_set_cipher_list",
++                        "no cipher match",
++                    )
++                ],
++            ),
++            (
++                [
++                    (
++                        "SSL routines",
++                        "",
++                        "no cipher match",
++                    )
++                ],
++            )
+         )
+ 
+     def test_load_client_ca(self, context, ca_file):
+@@ -572,13 +584,22 @@ class TestContext(object):
+         with pytest.raises(Error) as e:
+             context.set_session_id(b"abc" * 1000)
+ 
+-        assert [
+-            (
+-                "SSL routines",
+-                "SSL_CTX_set_session_id_context",
+-                "ssl session id context too long",
+-            )
+-        ] == e.value.args[0]
++        assert e.value.args[0] in (
++            [
++                (
++                    "SSL routines",
++                    "SSL_CTX_set_session_id_context",
++                    "ssl session id context too long",
++                )
++            ],
++            [
++                (
++                    "SSL routines",
++                    "",
++                    "ssl session id context too long",
++                )
++            ],
++        )
+ 
+     def test_set_session_id_unicode(self, context):
+         """
+@@ -593,11 +614,17 @@ class TestContext(object):
+         `SSLv3_METHOD`, `SSLv23_METHOD`, `TLSv1_METHOD`, `TLSv1_1_METHOD`,
+         or `TLSv1_2_METHOD`.
+         """
+-        methods = [SSLv23_METHOD, TLSv1_METHOD]
++        methods = [SSLv23_METHOD, TLS_METHOD]
+         for meth in methods:
+             Context(meth)
+ 
+-        maybe = [SSLv2_METHOD, SSLv3_METHOD, TLSv1_1_METHOD, TLSv1_2_METHOD]
++        maybe = [
++            SSLv2_METHOD,
++            SSLv3_METHOD,
++            TLSv1_METHOD,
++            TLSv1_1_METHOD,
++            TLSv1_2_METHOD
++        ]
+         for meth in maybe:
+             try:
+                 Context(meth)
+@@ -615,7 +642,7 @@ class TestContext(object):
+         """
+         `Context` can be used to create instances of that type.
+         """
+-        assert is_consistent_type(Context, "Context", TLSv1_METHOD)
++        assert is_consistent_type(Context, "Context", TLS_METHOD)
+ 
+     def test_use_privatekey(self):
+         """
+@@ -1035,7 +1062,8 @@ class TestContext(object):
+         def keylog(conn, line):
+             called.append((conn, line))
+ 
+-        server_context = Context(TLSv1_2_METHOD)
++        server_context = Context(TLS_METHOD)
++        server_context.set_max_proto_version(TLS1_2_VERSION)
+         server_context.set_keylog_callback(keylog)
+         server_context.use_certificate(
+             load_certificate(FILETYPE_PEM, root_cert_pem)
+@@ -1409,7 +1437,8 @@ class TestContext(object):
+         exception, verification fails and the exception is propagated to the
+         caller of `Connection.do_handshake`.
+         """
+-        serverContext = Context(TLSv1_2_METHOD)
++        serverContext = Context(TLS_METHOD)
++        serverContext.set_max_proto_version(TLS1_2_VERSION)
+         serverContext.use_privatekey(
+             load_privatekey(FILETYPE_PEM, root_key_pem)
+         )
+@@ -1417,7 +1446,8 @@ class TestContext(object):
+             load_certificate(FILETYPE_PEM, root_cert_pem)
+         )
+ 
+-        clientContext = Context(TLSv1_2_METHOD)
++        clientContext = Context(TLS_METHOD)
++        clientContext.set_max_proto_version(TLS1_2_VERSION)
+ 
+         def verify_callback(*args):
+             raise Exception("silly verify failure")
+@@ -1435,7 +1465,8 @@ class TestContext(object):
+         times, the pointers to the old call functions should not be dangling
+         and trigger a segfault.
+         """
+-        serverContext = Context(TLSv1_2_METHOD)
++        serverContext = Context(TLS_METHOD)
++        serverContext.set_max_proto_version(TLS1_2_VERSION)
+         serverContext.use_privatekey(
+             load_privatekey(FILETYPE_PEM, root_key_pem)
+         )
+@@ -1443,7 +1474,8 @@ class TestContext(object):
+             load_certificate(FILETYPE_PEM, root_cert_pem)
+         )
+ 
+-        clientContext = Context(TLSv1_2_METHOD)
++        clientContext = Context(TLS_METHOD)
++        clientContext.set_max_proto_version(TLS1_2_VERSION)
+ 
+         clients = []
+ 
+@@ -1479,7 +1511,8 @@ class TestContext(object):
+         """
+         If the verify callback is omitted, the preverify value is used.
+         """
+-        serverContext = Context(TLSv1_2_METHOD)
++        serverContext = Context(TLS_METHOD)
++        serverContext.set_max_proto_version(TLS1_2_VERSION)
+         serverContext.use_privatekey(
+             load_privatekey(FILETYPE_PEM, root_key_pem)
+         )
+@@ -1487,7 +1520,8 @@ class TestContext(object):
+             load_certificate(FILETYPE_PEM, root_cert_pem)
+         )
+ 
+-        clientContext = Context(TLSv1_2_METHOD)
++        clientContext = Context(TLS_METHOD)
++        clientContext.set_max_proto_version(TLS1_2_VERSION)
+         clientContext.set_verify(mode, None)
+ 
+         if mode == SSL.VERIFY_PEER:
+@@ -1933,8 +1967,11 @@ class TestApplicationLayerProtoNegotiation(object):
+         protocols list. Ensure that we produce a user-visible error.
+         """
+         context = Context(SSLv23_METHOD)
+-        with pytest.raises(Error):
++        if _lib.CRYPTOGRAPHY_OPENSSL_300_OR_GREATER:
+             context.set_alpn_protos([])
++        else:
++            with pytest.raises(Error):
++                context.set_alpn_protos([])
+ 
+     def test_alpn_set_on_connection(self):
+         """
+@@ -2679,7 +2716,8 @@ class TestConnection(object):
+         """
+         key = load_privatekey(FILETYPE_PEM, server_key_pem)
+         cert = load_certificate(FILETYPE_PEM, server_cert_pem)
+-        ctx = Context(TLSv1_2_METHOD)
++        ctx = Context(TLS_METHOD)
++        ctx.set_max_proto_version(TLS1_2_VERSION)
+         ctx.use_privatekey(key)
+         ctx.use_certificate(cert)
+         ctx.set_session_id("unity-test")
+@@ -2715,12 +2753,13 @@ class TestConnection(object):
+         with a context using a different SSL method than the `Connection`
+         is using, a `OpenSSL.SSL.Error` is raised.
+         """
+-        v1 = TLSv1_2_METHOD
+-        v2 = TLSv1_METHOD
++        v1 = TLS1_2_VERSION
++        v2 = TLS1_VERSION
+ 
+         key = load_privatekey(FILETYPE_PEM, server_key_pem)
+         cert = load_certificate(FILETYPE_PEM, server_cert_pem)
+-        ctx = Context(v1)
++        ctx = Context(TLS_METHOD)
++        ctx.set_max_proto_version(v1)
+         ctx.use_privatekey(key)
+         ctx.use_certificate(cert)
+         ctx.set_session_id(b"unity-test")
+@@ -2731,7 +2770,9 @@ class TestConnection(object):
+             return server
+ 
+         def makeOriginalClient(socket):
+-            client = Connection(Context(v1), socket)
++            cctx = Context(TLS_METHOD)
++            cctx.set_max_proto_version(v1)
++            client = Connection(cctx, socket)
+             client.set_connect_state()
+             return client
+ 
+@@ -2742,7 +2783,9 @@ class TestConnection(object):
+ 
+         def makeClient(socket):
+             # Intentionally use a different, incompatible method here.
+-            client = Connection(Context(v2), socket)
++            cctx = Context(TLS_METHOD)
++            cctx.set_max_proto_version(v2)
++            client = Connection(cctx, socket)
+             client.set_connect_state()
+             client.set_session(originalSession)
+             return client
+@@ -3335,10 +3378,23 @@ class TestConnectionRenegotiate(object):
+         """
+         Go through a complete renegotiation cycle.
+         """
+-        server, client = loopback(
+-            lambda s: loopback_server_factory(s, TLSv1_2_METHOD),
+-            lambda s: loopback_client_factory(s, TLSv1_2_METHOD),
+-        )
++        def client_factory(socket):
++            ctx = Context(TLS_METHOD)
++            ctx.set_max_proto_version(TLS1_2_VERSION)
++            client = Connection(ctx, socket)
++            client.set_connect_state()
++            return client
++
++        def server_factory(socket):
++            ctx = Context(TLS_METHOD)
++            ctx.set_max_proto_version(TLS1_2_VERSION)
++            ctx.use_privatekey(load_privatekey(FILETYPE_PEM, server_key_pem))
++            ctx.use_certificate(load_certificate(FILETYPE_PEM, server_cert_pem))
++            server = Connection(ctx, socket)
++            server.set_accept_state()
++            return server
++
++        server, client = loopback(server_factory, client_factory)
+ 
+         server.send(b"hello world")
+ 
+@@ -3700,9 +3756,20 @@ class TestMemoryBIO(object):
+         """
+         server_conn, client_conn = loopback()
+         client_conn.sock_shutdown(SHUT_RDWR)
+-        with pytest.raises(SysCallError) as err:
++        with pytest.raises(Error) as err:
+             server_conn.recv(1024)
+-        assert err.value.args == (-1, "Unexpected EOF")
++        if isinstance(err, SysCallError):
++            assert err.value.args == (-1, "Unexpected EOF")
++        else:
++            assert err.value.args == (
++                [
++                    (
++                        "SSL routines",
++                        "",
++                        "unexpected eof while reading",
++                    ),
++                ],
++            )
+ 
+     def _check_client_ca_list(self, func):
+         """
