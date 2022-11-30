@@ -1,8 +1,8 @@
 --- a/src/OpenSSL/SSL.py
 +++ b/src/OpenSSL/SSL.py
-@@ -1431,6 +1431,67 @@
-         _lib.SSL_CTX_set_next_proto_select_cb(
-             self._context, self._npn_select_callback, _ffi.NULL)
+@@ -1425,6 +1425,70 @@
+             _lib.SSL_CTX_set_tlsext_use_srtp(self._context, profiles) == 0
+         )
  
 +    def set_tmp_dh_from_pem(self, pem):
 +        """
@@ -23,12 +23,12 @@
 +        if result <= 0:
 +            _raise_current_error()
 +
-+        dh = _lib.PEM_read_bio_DHparams(bio, _ffi.NULL, _ffi.NULL, _ffi.NULL)
-+        if dh == _ffi.NULL:
-+            _raise_current_error()
-+        dh = _ffi.gc(dh, _lib.DH_free)
-+
-+        _lib.SSL_CTX_set_tmp_dh(self._context, dh)
++        pkey = _lib.PEM_read_bio_Parameters(bio, _ffi.NULL)
++        _openssl_assert(pkey != _ffi.NULL)
++        res = _lib.SSL_CTX_set0_tmp_dh_pkey(self._context, pkey)
++        if res != 1:
++            _lib.EVP_PKEY_free(pkey)
++        _openssl_assert(res == 1)
 +
 +    def set_tmp_ecdh_from_pem(self, pem):
 +        """
@@ -49,21 +49,24 @@
 +        if result <= 0:
 +            _raise_current_error()
 +
-+        group = _lib.PEM_read_bio_ECPKParameters(bio, _ffi.NULL, _ffi.NULL, _ffi.NULL)
-+        if group == _ffi.NULL:
-+            _raise_current_error()
-+        group = _ffi.gc(group, _lib.EC_GROUP_free)
++        pkey = _lib.PEM_read_bio_Parameters(bio, _ffi.NULL)
++        _openssl_assert(pkey != _ffi.NULL)
++        pkey = _ffi.gc(pkey, _lib.EVP_PKEY_free)
 +
-+        nid = _lib.EC_GROUP_get_curve_name(group)
-+        if nid == 0:
-+            _raise_current_error()
++        buflen = _ffi.new("size_t *")
++        res = _lib.EVP_PKEY_get_group_name(pkey, _ffi.NULL, 0, buflen)
++        _openssl_assert(res == 1)
 +
-+        key = _lib.EC_KEY_new_by_curve_name(nid)
-+        if key == _ffi.NULL:
-+            _raise_current_error()
-+        key = _ffi.gc(key, _lib.EC_KEY_free)
++        buf = _ffi.new("unsigned char[]", buflen + 1)
++        res = _lib.EVP_PKEY_get_group_name(pkey, buf, buflen + 1, buflen)
++        _openssl_assert(res == 1)
 +
-+        _lib.SSL_CTX_set_tmp_ecdh(self._context, key)
++        nid = _lib.OBJ_sn2nid(buf)
++        _openssl_assert(nid != 0)
++
++        curves = _ffi.new("int *", nid)
++        res = _lib.SSL_CTX_set1_curves(self._context, curves, 1)
++        _openssl_assert(res == 1)
 +
      @_requires_alpn
      def set_alpn_protos(self, protos):
