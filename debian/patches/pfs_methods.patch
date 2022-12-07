@@ -57,8 +57,8 @@
 +        res = _lib.EVP_PKEY_get_group_name(pkey, _ffi.NULL, 0, buflen)
 +        _openssl_assert(res == 1)
 +
-+        buf = _ffi.new("unsigned char[]", buflen + 1)
-+        res = _lib.EVP_PKEY_get_group_name(pkey, buf, buflen + 1, buflen)
++        buf = _ffi.new("unsigned char[]", buflen[0] + 1)
++        res = _lib.EVP_PKEY_get_group_name(pkey, buf, buflen[0] + 1, buflen)
 +        _openssl_assert(res == 1)
 +
 +        nid = _lib.OBJ_sn2nid(buf)
