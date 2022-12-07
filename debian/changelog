@@ -1,3 +1,9 @@
+pyopenssl (21.0.0-1pexip2) pexip-bullseye-openssl3; urgency=medium
+
+  * pfs_methods.patch: Fix set_tmp_ecdh_from_pem
+
+ -- John-Mark Bell <jmb@pexip.com>  Wed, 07 Dec 2022 21:30:22 +0000
+
 pyopenssl (21.0.0-1pexip1) pexip-bullseye-openssl3; urgency=medium
 
   * New upstream release
