@@ -1,0 +1,29 @@
+diff --git a/src/OpenSSL/SSL.py b/src/OpenSSL/SSL.py
+index e71b044..7e7d11f 100644
+--- a/src/OpenSSL/SSL.py
++++ b/src/OpenSSL/SSL.py
+@@ -719,6 +719,24 @@ class Context(object):
+             _lib.SSL_CTX_set_max_proto_version(self._context, version) == 1
+         )
+ 
++    def get_security_level(self):
++        """
++        Get the security level of this context.
++
++        If the underlying OpenSSL build is missing support for the selected
++        version, this method will raise an exception.
++        """
++        return _lib.SSL_CTX_get_security_level(self._context)
++
++    def set_security_level(self, level):
++        """
++        Set the security level of this context.
++
++        If the underlying OpenSSL build is missing support for the selected
++        version, this method will raise an exception.
++        """
++        _lib.SSL_CTX_set_security_level(self._context, level)
++
+     def load_verify_locations(self, cafile, capath=None):
+         """
+         Let SSL know where we can find trusted certificates for the certificate

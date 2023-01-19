@@ -2,3 +2,4 @@
 0002-pass-PYTHONPATH-when-building-HTML-doc.patch
 openssl3.patch
 pfs_methods.patch
+seclevel.patch
