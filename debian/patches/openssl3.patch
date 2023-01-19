@@ -535,9 +535,18 @@ index eda4af6..78e64c3 100644
  
  # Set the default string mask to match OpenSSL upstream (since 2005) and
 diff --git a/tests/test_crypto.py b/tests/test_crypto.py
-index ef3429d..7d91322 100644
+index ef3429d..eaf17da 100644
 --- a/tests/test_crypto.py
 +++ b/tests/test_crypto.py
+@@ -61,7 +61,7 @@ def normalize_privatekey_pem(pem):
+     return dump_privatekey(FILETYPE_PEM, load_privatekey(FILETYPE_PEM, pem))
+ 
+ 
+-GOOD_CIPHER = "blowfish"
++GOOD_CIPHER = "aes-256-cbc"
+ BAD_CIPHER = "zippers"
+ 
+ GOOD_DIGEST = "SHA1"
 @@ -1151,10 +1151,10 @@ class TestPKey(object):
          `PKey.generate_key` generates a DSA key when passed `TYPE_DSA` as a
          type and a reasonable number of bits.
@@ -607,7 +616,7 @@ index ef3429d..7d91322 100644
  
  class EllipticCurveFactory(object):
 diff --git a/tests/test_ssl.py b/tests/test_ssl.py
-index e604164..c064d84 100644
+index e604164..b5f7c78 100644
 --- a/tests/test_ssl.py
 +++ b/tests/test_ssl.py
 @@ -56,6 +56,7 @@ from OpenSSL.SSL import (
@@ -711,6 +720,15 @@ index e604164..c064d84 100644
  
      def test_use_privatekey(self):
          """
+@@ -882,7 +909,7 @@ class TestContext(object):
+         """
+         key = PKey()
+         key.generate_key(TYPE_RSA, 1024)
+-        pem = dump_privatekey(FILETYPE_PEM, key, "blowfish", passphrase)
++        pem = dump_privatekey(FILETYPE_PEM, key, "aes-256-cbc", passphrase)
+         with open(tmpfile, "w") as fObj:
+             fObj.write(pem.decode("ascii"))
+         return tmpfile
 @@ -1035,7 +1062,8 @@ class TestContext(object):
          def keylog(conn, line):
              called.append((conn, line))
