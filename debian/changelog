@@ -1,6 +1,7 @@
 pyopenssl (21.0.0-1pexip3) pexip-bullseye-openssl3; urgency=medium
 
   * seclevel.patch: Expose security level configuration
+  * openssl3.patch: fix tests trying to use blowfish
 
  -- John-Mark Bell <jmb@pexip.com>  Thu, 19 Jan 2022 13:00:49 +0000
 
