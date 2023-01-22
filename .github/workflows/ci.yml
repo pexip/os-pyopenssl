@@ -5,47 +5,53 @@ on:
 
 jobs:
   linux:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.PYTHON.OS || 'ubuntu-22.04' }}
     strategy:
       matrix:
         PYTHON:
           # Base builds
-          - {VERSION: "2.7", TOXENV: "py27"}
-          - {VERSION: "3.6", TOXENV: "py36"}
+          - {VERSION: "3.6", TOXENV: "py36", OS: "ubuntu-20.04" }
           - {VERSION: "3.7", TOXENV: "py37"}
           - {VERSION: "3.8", TOXENV: "py38"}
           - {VERSION: "3.9", TOXENV: "py39"}
-          - {VERSION: "pypy2", TOXENV: "pypy"}
-          - {VERSION: "pypy3", TOXENV: "pypy3"}
-          # -cryptographyMaster
-          - {VERSION: "3.6", TOXENV: "py36-cryptographyMaster"}
-          - {VERSION: "3.7", TOXENV: "py37-cryptographyMaster"}
-          - {VERSION: "3.8", TOXENV: "py38-cryptographyMaster"}
-          - {VERSION: "3.9", TOXENV: "py39-cryptographyMaster"}
-          - {VERSION: "pypy3", TOXENV: "pypy3-cryptographyMaster"}
+          - {VERSION: "3.10", TOXENV: "py310"}
+          - {VERSION: "3.11", TOXENV: "py311"}
+          - {VERSION: "pypy-3.7", TOXENV: "pypy3"}
+          - {VERSION: "pypy-3.8", TOXENV: "pypy3"}
+          # -cryptographyMain
+          - {VERSION: "3.6", TOXENV: "py36-cryptographyMain", OS: "ubuntu-20.04"}
+          - {VERSION: "3.7", TOXENV: "py37-cryptographyMain"}
+          - {VERSION: "3.8", TOXENV: "py38-cryptographyMain"}
+          - {VERSION: "3.9", TOXENV: "py39-cryptographyMain"}
+          - {VERSION: "3.10", TOXENV: "py310-cryptographyMain"}
+          - {VERSION: "3.11", TOXENV: "py311-cryptographyMain"}
+          - {VERSION: "pypy-3.8", TOXENV: "pypy3-cryptographyMain"}
+          - {VERSION: "pypy-3.9", TOXENV: "pypy3-cryptographyMain"}
           # -cryptographyMinimum
-          - {VERSION: "2.7", TOXENV: "py27-cryptographyMinimum"}
-          - {VERSION: "3.6", TOXENV: "py36-cryptographyMinimum"}
+          - {VERSION: "3.6", TOXENV: "py36-cryptographyMinimum", OS: "ubuntu-20.04"}
           - {VERSION: "3.7", TOXENV: "py37-cryptographyMinimum"}
           - {VERSION: "3.8", TOXENV: "py38-cryptographyMinimum"}
           - {VERSION: "3.9", TOXENV: "py39-cryptographyMinimum"}
-          - {VERSION: "pypy2", TOXENV: "pypy-cryptographyMinimum"}
-          - {VERSION: "pypy3", TOXENV: "pypy3-cryptographyMinimum"}
+          - {VERSION: "3.10", TOXENV: "py310-cryptographyMinimum"}
+          - {VERSION: "3.11", TOXENV: "py311-cryptographyMinimum"}
+          - {VERSION: "pypy-3.8", TOXENV: "pypy3-cryptographyMinimum"}
+          # Cryptography wheels
+          - {VERSION: "3.9", TOXENV: "py39-cryptographyMinimum-useWheel"}
+          - {VERSION: "3.9", TOXENV: "py39-useWheel"}
           # Random order
-          - {VERSION: "2.7", TOXENV: "py27-randomorder"}
           - {VERSION: "3.9", TOXENV: "py39-randomorder"}
           # Downstreams
-          - {VERSION: "3.7", TOXENV: "py37-twistedMaster"}
+          - {VERSION: "3.7", TOXENV: "py37-twistedTrunk"}
           # Meta
-          - {VERSION: "2.7", TOXENV: "check-manifest"}
-          - {VERSION: "2.7", TOXENV: "pypi-readme"}
+          - {VERSION: "3.9", TOXENV: "check-manifest"}
           - {VERSION: "3.9", TOXENV: "flake8"}
-          - {VERSION: "2.7", TOXENV: "docs"}
+          - {VERSION: "3.6", TOXENV: "py36-mypy", OS: "ubuntu-20.04"}
+          - {VERSION: "3.9", TOXENV: "docs"}
     name: "${{ matrix.PYTHON.TOXENV }}"
     steps:
-      - uses: actions/checkout@v2.3.4
+      - uses: actions/checkout@v3
       - name: Setup python
-        uses: actions/setup-python@v2.2.2
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.PYTHON.VERSION }}
       - run: python -m pip install tox coverage
@@ -63,14 +69,13 @@ jobs:
     strategy:
       matrix:
         TEST:
-          - {CONTAINER: "stretch", TOXENV: "py27"}
           - {CONTAINER: "ubuntu-bionic", TOXENV: "py36"}
-          # cryptographyMaster used since there's no wheel
-          - {CONTAINER: "ubuntu-rolling", TOXENV: "py39-cryptographyMaster"}
+          # cryptographyMain used since there's no wheel
+          - {CONTAINER: "ubuntu-rolling", TOXENV: "py310-cryptographyMain"}
     name: "${{ matrix.TEST.TOXENV }} on ${{ matrix.TEST.CONTAINER }}"
     steps:
-      - uses: actions/checkout@v2.3.4
-      - run: tox -v
+      - uses: actions/checkout@v3
+      - run: /venv/bin/tox -v
         env:
           TOXENV: ${{ matrix.TEST.TOXENV }}
           RUSTUP_HOME: /root/.rustup

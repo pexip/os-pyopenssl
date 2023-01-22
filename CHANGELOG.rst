@@ -4,7 +4,73 @@ Changelog
 Versions are year-based with a strict backward-compatibility policy.
 The third digit is only for regressions.
 
-21.0.0 (2020-09-28)
+23.0.0 (2023-01-01)
+-------------------
+
+Backward-incompatible changes:
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Deprecations:
+^^^^^^^^^^^^^
+
+Changes:
+^^^^^^^^
+
+- Add ``OpenSSL.SSL.X509StoreFlags.PARTIAL_CHAIN`` constant to allow for users
+  to perform certificate verification on partial certificate chains.
+  `#1166 <https://github.com/pyca/pyopenssl/pull/1166>`_
+- ``cryptography`` maximum version has been increased to 39.0.x.
+
+22.1.0 (2022-09-25)
+-------------------
+
+Backward-incompatible changes:
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- Remove support for SSLv2 and SSLv3.
+- The minimum ``cryptography`` version is now 38.0.x (and we now pin releases 
+  against ``cryptography`` major versions to prevent future breakage)
+- The ``OpenSSL.crypto.X509StoreContextError`` exception has been refactored,
+  changing its internal attributes.
+  `#1133 <https://github.com/pyca/pyopenssl/pull/1133>`_
+
+Deprecations:
+^^^^^^^^^^^^^
+
+- ``OpenSSL.SSL.SSLeay_version`` is deprecated in favor of
+  ``OpenSSL.SSL.OpenSSL_version``. The constants ``OpenSSL.SSL.SSLEAY_*`` are
+  deprecated in favor of ``OpenSSL.SSL.OPENSSL_*``.
+
+Changes:
+^^^^^^^^
+
+- Add ``OpenSSL.SSL.Connection.set_verify`` and ``OpenSSL.SSL.Connection.get_verify_mode``
+  to override the context object's verification flags.
+  `#1073 <https://github.com/pyca/pyopenssl/pull/1073>`_
+- Add ``OpenSSL.SSL.Connection.use_certificate`` and ``OpenSSL.SSL.Connection.use_privatekey``
+  to set a certificate per connection (and not just per context) `#1121 <https://github.com/pyca/pyopenssl/pull/1121>`_.
+
+22.0.0 (2022-01-29)
+-------------------
+
+Backward-incompatible changes:
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- Drop support for Python 2.7.
+  `#1047 <https://github.com/pyca/pyopenssl/pull/1047>`_
+- The minimum ``cryptography`` version is now 35.0.
+
+Deprecations:
+^^^^^^^^^^^^^
+
+Changes:
+^^^^^^^^
+
+- Expose wrappers for some `DTLS
+  <https://en.wikipedia.org/wiki/Datagram_Transport_Layer_Security>`_
+  primitives. `#1026 <https://github.com/pyca/pyopenssl/pull/1026>`_
+
+21.0.0 (2021-09-28)
 -------------------
 
 Backward-incompatible changes:
