@@ -1,3 +1,9 @@
+pyopenssl (21.0.0-1pexip4) pexip; urgency=medium
+
+  * Merge openssl3 changes to bullseye
+
+ -- Steve McIntyre <steve.mcintyre@pexip.com>  Fri, 27 Jan 2023 11:48:27 +0000
+
 pyopenssl (21.0.0-1pexip3) pexip-bullseye-openssl3; urgency=medium
 
   * seclevel.patch: Expose security level configuration
