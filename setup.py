@@ -12,7 +12,7 @@ import codecs
 import os
 import re
 
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 
 
 HERE = os.path.abspath(os.path.dirname(__file__))
@@ -68,6 +68,9 @@ if __name__ == "__main__":
         author=find_meta("author"),
         author_email=find_meta("email"),
         url=URI,
+        project_urls={
+            "Source": "https://github.com/pyca/pyopenssl",
+        },
         license=find_meta("license"),
         classifiers=[
             "Development Status :: 6 - Mature",
@@ -76,31 +79,28 @@ if __name__ == "__main__":
             "Operating System :: MacOS :: MacOS X",
             "Operating System :: Microsoft :: Windows",
             "Operating System :: POSIX",
-            "Programming Language :: Python :: 2",
-            "Programming Language :: Python :: 2.7",
             "Programming Language :: Python :: 3",
             "Programming Language :: Python :: 3.6",
             "Programming Language :: Python :: 3.7",
             "Programming Language :: Python :: 3.8",
             "Programming Language :: Python :: 3.9",
+            "Programming Language :: Python :: 3.10",
+            "Programming Language :: Python :: 3.11",
             "Programming Language :: Python :: Implementation :: CPython",
             "Programming Language :: Python :: Implementation :: PyPy",
             "Topic :: Security :: Cryptography",
             "Topic :: Software Development :: Libraries :: Python Modules",
             "Topic :: System :: Networking",
         ],
-        python_requires=(
-            ">=2.7,!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,!=3.5.*"
-        ),
+        python_requires=">=3.6",
         packages=find_packages(where="src"),
         package_dir={"": "src"},
         install_requires=[
             # Fix cryptographyMinimum in tox.ini when changing this!
-            "cryptography>=3.3",
-            "six>=1.5.2",
+            "cryptography>=38.0.0,<40",
         ],
         extras_require={
             "test": ["flaky", "pretend", "pytest>=3.0.1"],
-            "docs": ["sphinx", "sphinx_rtd_theme"],
+            "docs": ["sphinx!=5.2.0,!=5.2.0.post0", "sphinx_rtd_theme"],
         },
     )
