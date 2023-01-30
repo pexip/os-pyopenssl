@@ -1,3 +1,30 @@
+pyopenssl (23.0.0-1pexip1) pexip; urgency=medium
+
+  * New upstream release
+
+ -- John-Mark Bell <jmb@pexip.com>  Mon, 30 Jan 2023 14:45:01 +0000
+
+pyopenssl (23.0.0-1) unstable; urgency=medium
+
+  * New upstream release
+  * debian/copyright
+    - extend packaging copyright years
+
+ -- Sandro Tosi <morph@debian.org>  Sun, 22 Jan 2023 00:00:46 -0500
+
+pyopenssl (22.1.0-1) unstable; urgency=medium
+
+  * New upstream release; Closes: #1026215
+  * debian/control
+    - bump Standards-Version to 4.6.1.0 (no changes needed)
+    - drop XS-Python-Version from source stanza
+    - bump b-d on cryptography to >= 37.0.2
+  * debian/copyright
+    - extend packaging copyright years
+    - remove notices for examples/, files were removed upstream
+
+ -- Sandro Tosi <morph@debian.org>  Fri, 16 Dec 2022 23:53:37 -0500
+
 pyopenssl (21.0.0-1pexip4) pexip; urgency=medium
 
   * Merge openssl3 changes to bullseye
