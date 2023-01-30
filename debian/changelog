@@ -1,6 +1,7 @@
 pyopenssl (23.0.0-1pexip1) pexip; urgency=medium
 
   * New upstream release
+  * debian/patches/openssl3-support.patch: refresh
 
  -- John-Mark Bell <jmb@pexip.com>  Mon, 30 Jan 2023 14:45:01 +0000
 
