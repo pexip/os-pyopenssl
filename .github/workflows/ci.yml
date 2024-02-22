@@ -49,7 +49,7 @@ jobs:
           - {VERSION: "3.9", TOXENV: "docs"}
     name: "${{ matrix.PYTHON.TOXENV }}"
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Setup python
         uses: actions/setup-python@v4
         with:
@@ -74,7 +74,7 @@ jobs:
           - {CONTAINER: "ubuntu-rolling", TOXENV: "py310-cryptographyMain"}
     name: "${{ matrix.TEST.TOXENV }} on ${{ matrix.TEST.CONTAINER }}"
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - run: /venv/bin/tox -v
         env:
           TOXENV: ${{ matrix.TEST.TOXENV }}
