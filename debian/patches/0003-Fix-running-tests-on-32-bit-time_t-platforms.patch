@@ -1,0 +1,24 @@
+From: Andrey Rakhmatullin <wrar@debian.org>
+Date: Mon, 18 Mar 2024 20:53:31 +0500
+Subject: Fix running tests on 32-bit time_t platforms.
+
+---
+ tests/test_crypto.py | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/tests/test_crypto.py b/tests/test_crypto.py
+index 7b07b44..2183add 100644
+--- a/tests/test_crypto.py
++++ b/tests/test_crypto.py
+@@ -3364,7 +3364,10 @@ class TestX509StoreContext:
+         expire_datetime = datetime.strptime(
+             expire_time.decode("utf-8"), "%Y%m%d%H%M%SZ"
+         )
+-        store.set_time(expire_datetime)
++        try:
++            store.set_time(expire_datetime)
++        except OverflowError:
++            pytest.skip("Doesn't work with 32-bit time_t")
+ 
+         store_ctx = X509StoreContext(store, self.intermediate_server_cert)
+         with pytest.raises(X509StoreContextError) as exc:

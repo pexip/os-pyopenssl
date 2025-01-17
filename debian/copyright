@@ -7,7 +7,9 @@ Copyright: Copyright (C) 2008-2020 Jean-Paul Calderone, All rights reserved
 License: Apache-2.0
 
 Files: debian/*
-Copyright: Copyright (C) 2008-2023, Sandro Tosi <morph@debian.org>
+Copyright: 
+    Copyright (C) 2008-2024, Sandro Tosi <morph@debian.org>
+    Copyright (C) 2024, Andrey Rakhmatullin <wrar@debian.org>
 License: Apache-2.0
 
 License: Apache-2.0

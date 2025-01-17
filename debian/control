@@ -1,30 +1,36 @@
 Source: pyopenssl
 Section: python
 Priority: optional
-Maintainer: Sandro Tosi <morph@debian.org>
-Uploaders: Debian Python Team <team+python@tracker.debian.org>,
-Build-Depends: debhelper-compat (= 13),
-               dh-python,
+Maintainer: Debian Python Team <team+python@tracker.debian.org>
+Uploaders: Andrey Rakhmatullin <wrar@debian.org>
+Build-Depends: ca-certificates <!nocheck>,
+               debhelper-compat (= 13),
+               dh-sequence-python3,
+               dh-sequence-sphinxdoc <!nodoc>,
+               openssl <!nocheck>,
                python3-all,
-               python3-cffi,
-               python3-cryptography (>= 37.0.2),
-               python3-flaky,
-               python3-pretend,
-               python3-pytest (>= 3.0.1),
+               python3-cffi <!nocheck>,
+               python3-cryptography (<< 45),
+               python3-cryptography (>= 41.0.5),
+               python3-pretend <!nocheck>,
+               python3-pytest <!nocheck>,
+               python3-pytest-rerunfailures <!nocheck>,
                python3-setuptools,
-               python3-six,
-               python3-sphinx (>= 1.0.7+dfsg),
-               python3-sphinx-rtd-theme,
-Standards-Version: 4.6.1.0
+               python3-sphinx <!nodoc>,
+               python3-sphinx-rtd-theme <!nodoc>,
+Standards-Version: 4.7.0
 Homepage: https://pyopenssl.org/
 Vcs-Git: https://salsa.debian.org/python-team/packages/pyopenssl.git
 Vcs-Browser: https://salsa.debian.org/python-team/packages/pyopenssl
+Rules-Requires-Root: no
+Testsuite: autopkgtest-pkg-pybuild
 
 Package: python-openssl-doc
 Section: doc
 Architecture: all
 Depends: ${misc:Depends},
          ${sphinxdoc:Depends},
+Built-Using: ${sphinxdoc:Built-Using}
 Suggests: python3-openssl,
 Description: Python wrapper around the OpenSSL library (documentation package)
  High-level wrapper around a subset of the OpenSSL library, includes
@@ -42,12 +48,10 @@ Description: Python wrapper around the OpenSSL library (documentation package)
 
 Package: python3-openssl
 Architecture: all
-Depends: python3-cryptography (>= 3.2~),
+Depends: python3-typing-extensions | python3-supported-min (>= 3.13),
          ${misc:Depends},
          ${python3:Depends},
-         ${shlibs:Depends},
 Suggests: python-openssl-doc,
-          python3-openssl-dbg,
 Description: Python 3 wrapper around the OpenSSL library
  High-level wrapper around a subset of the OpenSSL library, includes
  .
