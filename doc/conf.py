@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # pyOpenSSL documentation build configuration file, created by
 # sphinx-quickstart on Sat Jul 16 07:12:22 2011.
@@ -15,7 +14,6 @@ import codecs
 import os
 import re
 import sys
-
 
 HERE = os.path.abspath(os.path.dirname(__file__))
 
@@ -124,13 +122,14 @@ pygments_style = "sphinx"
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-on_rtd = os.environ.get("READTHEDOCS", None) == "True"
+if os.environ.get("READTHEDOCS", None) == "True":
+    html_baseurl = os.environ.get("READTHEDOCS_CANONICAL_URL", "")
 
-if not on_rtd:  # only import and set the theme if we're building docs locally
-    import sphinx_rtd_theme
+    if "html_context" not in globals():
+        html_context = {}
+    html_context["READTHEDOCS"] = True
 
-    html_theme = "sphinx_rtd_theme"
-    html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
+html_theme = "sphinx_rtd_theme"
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -251,6 +250,6 @@ latex_documents = [
 man_pages = [("index", "pyopenssl", "pyOpenSSL Documentation", [authors], 1)]
 
 intersphinx_mapping = {
-    "https://docs.python.org/3": None,
-    "https://cryptography.io/en/latest/": None,
+    "python": ("https://docs.python.org/3", None),
+    "cryptography": ("https://cryptography.io/en/latest/", None),
 }

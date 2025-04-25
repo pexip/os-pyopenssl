@@ -4,6 +4,194 @@ Changelog
 Versions are year-based with a strict backward-compatibility policy.
 The third digit is only for regressions.
 
+25.0.0 (2025-01-12)
+-------------------
+
+Backward-incompatible changes:
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Deprecations:
+^^^^^^^^^^^^^
+
+Changes:
+^^^^^^^^
+
+- Corrected type annotations on ``Context.set_alpn_select_callback``, ``Context.set_session_cache_mode``, ``Context.set_options``, ``Context.set_mode``, ``X509.subject_name_hash``, and ``X509Store.load_locations``.
+- Deprecated APIs are now marked using ``warnings.deprecated``. ``mypy`` will emit deprecation notices for them when used with ``--enable-error-code deprecated``.
+
+24.3.0 (2024-11-27)
+-------------------
+
+Backward-incompatible changes:
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- Removed the deprecated ``OpenSSL.crypto.CRL``, ``OpenSSL.crypto.Revoked``, ``OpenSSL.crypto.dump_crl``, and ``OpenSSL.crypto.load_crl``. ``cryptography.x509``'s CRL functionality should be used instead.
+- Removed the deprecated ``OpenSSL.crypto.sign`` and ``OpenSSL.crypto.verify``. ``cryptography.hazmat.primitives.asymmetric``'s signature APIs should be used instead.
+
+Deprecations:
+^^^^^^^^^^^^^
+
+- Deprecated ``OpenSSL.rand`` - callers should use ``os.urandom()`` instead.
+- Deprecated ``add_extensions`` and ``get_extensions`` on ``OpenSSL.crypto.X509Req`` and ``OpenSSL.crypto.X509``. These should have been deprecated at the same time ``X509Extension`` was. Users should use pyca/cryptography's X.509 APIs instead.
+- Deprecated ``OpenSSL.crypto.get_elliptic_curves`` and ``OpenSSL.crypto.get_elliptic_curve``, as well as passing the reult of them to ``OpenSSL.SSL.Context.set_tmp_ecdh``, users should instead pass curves from ``cryptography``.
+- Deprecated passing ``X509`` objects to ``OpenSSL.SSL.Context.use_certificate``, ``OpenSSL.SSL.Connection.use_certificate``, ``OpenSSL.SSL.Context.add_extra_chain_cert``, and ``OpenSSL.SSL.Context.add_client_ca``, users should instead pass ``cryptography.x509.Certificate`` instances. This is in preparation for deprecating pyOpenSSL's ``X509`` entirely.
+- Deprecated passing ``PKey`` objects to ``OpenSSL.SSL.Context.use_privatekey`` and ``OpenSSL.SSL.Connection.use_privatekey``, users should instead pass ``cryptography`` priate key instances. This is in preparation for deprecating pyOpenSSL's ``PKey`` entirely.
+
+Changes:
+^^^^^^^^
+
+* ``cryptography`` maximum version has been increased to 44.0.x.
+* ``OpenSSL.SSL.Connection.get_certificate``, ``OpenSSL.SSL.Connection.get_peer_certificate``, ``OpenSSL.SSL.Connection.get_peer_cert_chain``, and ``OpenSSL.SSL.Connection.get_verified_chain`` now take an ``as_cryptography`` keyword-argument. When ``True`` is passed then ``cryptography.x509.Certificate`` are returned, instead of ``OpenSSL.crypto.X509``. In the future, passing ``False`` (the default) will be deprecated.
+
+
+24.2.1 (2024-07-20)
+-------------------
+
+Backward-incompatible changes:
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Deprecations:
+^^^^^^^^^^^^^
+
+Changes:
+^^^^^^^^
+
+- Fixed changelog to remove sphinx specific restructured text strings.
+
+
+24.2.0 (2024-07-20)
+-------------------
+
+Backward-incompatible changes:
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Deprecations:
+^^^^^^^^^^^^^
+
+- Deprecated ``OpenSSL.crypto.X509Req``, ``OpenSSL.crypto.load_certificate_request``, ``OpenSSL.crypto.dump_certificate_request``. Instead, ``cryptography.x509.CertificateSigningRequest``, ``cryptography.x509.CertificateSigningRequestBuilder``, ``cryptography.x509.load_der_x509_csr``, or ``cryptography.x509.load_pem_x509_csr`` should be used.
+
+Changes:
+^^^^^^^^
+
+- Added type hints for the ``SSL`` module.
+  `#1308 <https://github.com/pyca/pyopenssl/pull/1308>`_.
+- Changed ``OpenSSL.crypto.PKey.from_cryptography_key`` to accept public and private EC, ED25519, ED448 keys.
+  `#1310 <https://github.com/pyca/pyopenssl/pull/1310>`_.
+
+24.1.0 (2024-03-09)
+-------------------
+
+Backward-incompatible changes:
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+* Removed the deprecated ``OpenSSL.crypto.PKCS12`` and
+  ``OpenSSL.crypto.NetscapeSPKI``. ``OpenSSL.crypto.PKCS12`` may be replaced
+  by the PKCS#12 APIs in the ``cryptography`` package.
+
+Deprecations:
+^^^^^^^^^^^^^
+
+Changes:
+^^^^^^^^
+
+24.0.0 (2024-01-22)
+-------------------
+
+Backward-incompatible changes:
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Deprecations:
+^^^^^^^^^^^^^
+
+Changes:
+^^^^^^^^
+
+- Added ``OpenSSL.SSL.Connection.get_selected_srtp_profile`` to determine which SRTP profile was negotiated.
+  `#1279 <https://github.com/pyca/pyopenssl/pull/1279>`_.
+
+23.3.0 (2023-10-25)
+-------------------
+
+Backward-incompatible changes:
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- Dropped support for Python 3.6.
+- The minimum ``cryptography`` version is now 41.0.5.
+- Removed ``OpenSSL.crypto.load_pkcs7`` and ``OpenSSL.crypto.load_pkcs12`` which had been deprecated for 3 years.
+- Added ``OpenSSL.SSL.OP_LEGACY_SERVER_CONNECT`` to allow legacy insecure renegotiation between OpenSSL and unpatched servers.
+  `#1234 <https://github.com/pyca/pyopenssl/pull/1234>`_.
+
+Deprecations:
+^^^^^^^^^^^^^
+
+- Deprecated ``OpenSSL.crypto.PKCS12`` (which was intended to have been deprecated at the same time as ``OpenSSL.crypto.load_pkcs12``).
+- Deprecated ``OpenSSL.crypto.NetscapeSPKI``.
+- Deprecated ``OpenSSL.crypto.CRL``
+- Deprecated ``OpenSSL.crypto.Revoked``
+- Deprecated ``OpenSSL.crypto.load_crl`` and ``OpenSSL.crypto.dump_crl``
+- Deprecated ``OpenSSL.crypto.sign`` and ``OpenSSL.crypto.verify``
+- Deprecated ``OpenSSL.crypto.X509Extension``
+
+Changes:
+^^^^^^^^
+
+- Changed ``OpenSSL.crypto.X509Store.add_crl`` to also accept
+  ``cryptography``'s ``x509.CertificateRevocationList`` arguments in addition
+  to the now deprecated ``OpenSSL.crypto.CRL`` arguments.
+- Fixed ``test_set_default_verify_paths`` test so that it is skipped if no
+  network connection is available.
+
+23.2.0 (2023-05-30)
+-------------------
+
+Backward-incompatible changes:
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- Removed ``X509StoreFlags.NOTIFY_POLICY``.
+  `#1213 <https://github.com/pyca/pyopenssl/pull/1213>`_.
+
+Deprecations:
+^^^^^^^^^^^^^
+
+Changes:
+^^^^^^^^
+
+- ``cryptography`` maximum version has been increased to 41.0.x.
+- Invalid versions are now rejected in ``OpenSSL.crypto.X509Req.set_version``.
+- Added ``X509VerificationCodes`` to ``OpenSSL.SSL``.
+  `#1202 <https://github.com/pyca/pyopenssl/pull/1202>`_.
+
+23.1.1 (2023-03-28)
+-------------------
+
+Backward-incompatible changes:
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Deprecations:
+^^^^^^^^^^^^^
+
+Changes:
+^^^^^^^^
+
+- Worked around an issue in OpenSSL 3.1.0 which caused `X509Extension.get_short_name` to raise an exception when no short name was known to OpenSSL.
+  `#1204 <https://github.com/pyca/pyopenssl/pull/1204>`_.
+
+23.1.0 (2023-03-24)
+-------------------
+
+Backward-incompatible changes:
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Deprecations:
+^^^^^^^^^^^^^
+
+Changes:
+^^^^^^^^
+
+- ``cryptography`` maximum version has been increased to 40.0.x.
+- Add ``OpenSSL.SSL.Connection.DTLSv1_get_timeout`` and ``OpenSSL.SSL.Connection.DTLSv1_handle_timeout``
+  to support DTLS timeouts `#1180 <https://github.com/pyca/pyopenssl/pull/1180>`_.
+
 23.0.0 (2023-01-01)
 -------------------
 
@@ -28,7 +216,7 @@ Backward-incompatible changes:
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - Remove support for SSLv2 and SSLv3.
-- The minimum ``cryptography`` version is now 38.0.x (and we now pin releases 
+- The minimum ``cryptography`` version is now 38.0.x (and we now pin releases
   against ``cryptography`` major versions to prevent future breakage)
 - The ``OpenSSL.crypto.X509StoreContextError`` exception has been refactored,
   changing its internal attributes.
@@ -122,7 +310,7 @@ Backward-incompatible changes:
 Deprecations:
 ^^^^^^^^^^^^^
 
-- Deprecated ``OpenSSL.crypto.loads_pkcs7`` and ``OpenSSL.crypto.loads_pkcs12``.
+- Deprecated ``OpenSSL.crypto.load_pkcs7`` and ``OpenSSL.crypto.load_pkcs12``.
 
 Changes:
 ^^^^^^^^
