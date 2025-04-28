@@ -1,3 +1,97 @@
+pyopenssl (25.0.0-1) unstable; urgency=medium
+
+  * New upstream version.
+
+ -- Andrey Rakhmatullin <wrar@debian.org>  Fri, 17 Jan 2025 23:22:27 +0500
+
+pyopenssl (24.3.0-1) unstable; urgency=medium
+
+  * New upstream version.
+  * Update the maximum supported python3-cryptography version.
+
+ -- Andrey Rakhmatullin <wrar@debian.org>  Sat, 30 Nov 2024 17:07:12 +0500
+
+pyopenssl (24.2.1-1) unstable; urgency=medium
+
+  * New upstream version.
+  * Update the maximum supported python3-cryptography version.
+  * Annotate dh-sequence-sphinxdoc with !nodoc.
+  * Bump Standards-Version to 4.7.0.
+
+ -- Andrey Rakhmatullin <wrar@debian.org>  Sat, 10 Aug 2024 22:44:32 +0500
+
+pyopenssl (24.1.0-1) unstable; urgency=medium
+
+  * New upstream version.
+  * Remove python3-flaky from B-D, add python3-pytest-rerunfailures.
+
+ -- Andrey Rakhmatullin <wrar@debian.org>  Mon, 25 Mar 2024 23:25:50 +0500
+
+pyopenssl (24.0.0-5) unstable; urgency=medium
+
+  * Update the version range of the python3-cryptography build dependency,
+    remove very old minimum versions from other build dependencies.
+
+ -- Andrey Rakhmatullin <wrar@debian.org>  Fri, 22 Mar 2024 22:56:28 +0500
+
+pyopenssl (24.0.0-4) unstable; urgency=medium
+
+  * Stop ignoring test failures.
+  * Fix running tests on 32-bit time_t platforms.
+  * Clean up debian/rules (Closes: #1047548).
+
+ -- Andrey Rakhmatullin <wrar@debian.org>  Mon, 18 Mar 2024 22:27:15 +0500
+
+pyopenssl (24.0.0-3) unstable; urgency=medium
+
+  * Add myself to Uploaders (Closes: #1065036).
+  * Add Rules-Requires-Root: no.
+  * Add autopkgtests.
+  * Bump Standards-Version to 4.6.2.
+  * Switch to B-D: dh-sequence-{python3,sphinxdoc}.
+  * Fix generating internal references in the docs.
+  * Add support for nocheck and nodoc build profiles.
+  * Use ${sphinxdoc:Built-Using} in python-openssl-doc.
+  * Remove obsolete Suggests: python3-openssl-dbg.
+
+ -- Andrey Rakhmatullin <wrar@debian.org>  Mon, 18 Mar 2024 00:37:25 +0500
+
+pyopenssl (24.0.0-2) unstable; urgency=medium
+
+  [ Alexandre Detiste ]
+  * remove obsolete python3-six build-dependency
+
+  [ Sandro Tosi ]
+  * orphan
+
+ -- Sandro Tosi <morph@debian.org>  Thu, 29 Feb 2024 01:15:59 -0500
+
+pyopenssl (24.0.0-1) unstable; urgency=medium
+
+  * Team upload.
+
+  [ upstream ]
+  * new release
+
+  [ Jonas Smedegaard ]
+  * unfuzz patches
+
+ -- Jonas Smedegaard <dr@jones.dk>  Thu, 22 Feb 2024 16:45:22 +0100
+
+pyopenssl (23.2.0-1) unstable; urgency=medium
+
+  * Team upload.
+
+  [ upstream ]
+  * new release
+    + closes: bug#1039706
+
+  [ Jonas Smedegaard ]
+  * unfuzz patches; add DEP-3 headers
+  * tighten (build-)dependency on python3-cryptography
+
+ -- Jonas Smedegaard <dr@jones.dk>  Sun, 08 Oct 2023 22:27:26 +0200
+
 pyopenssl (23.0.0-1+pexip24u4) pexip-bookworm; urgency=medium
 
   * New versioning scheme

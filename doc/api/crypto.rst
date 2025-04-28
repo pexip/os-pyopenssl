@@ -6,7 +6,9 @@
 .. py:module:: OpenSSL.crypto
    :synopsis: Generic cryptographic module
 
-.. note::
+.. danger::
+
+    **This module is pending deprecation, use pyca/cryptography instead.**
 
     `pyca/cryptography`_ is likely a better choice than using this module.
     It contains a complete set of cryptographic primitives as well as a significantly better and more powerful X509 API.
@@ -60,24 +62,6 @@ Public keys
 .. autofunction:: dump_publickey
 
 .. autofunction:: load_publickey
-
-Certificate revocation lists
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. autofunction:: dump_crl
-
-.. autofunction:: load_crl
-
-.. autofunction:: load_pkcs7_data
-
-.. autofunction:: load_pkcs12
-
-Signing and verifying signatures
---------------------------------
-
-.. autofunction:: sign
-
-.. autofunction:: verify
 
 
 .. _openssl-x509:
@@ -159,28 +143,10 @@ PKey objects
 .. autoclass:: PKey
                :members:
 
-.. _openssl-pkcs7:
-
 .. py:data:: TYPE_RSA
              TYPE_DSA
 
     Key type constants.
-
-PKCS7 objects
--------------
-
-PKCS7 objects have the following methods:
-
-.. autoclass:: PKCS7
-               :members:
-
-.. _openssl-pkcs12:
-
-PKCS12 objects
---------------
-
-.. autoclass:: PKCS12
-               :members:
 
 .. _openssl-509ext:
 
@@ -191,34 +157,6 @@ X509Extension objects
                :members:
                :special-members:
                :exclude-members: __weakref__
-
-.. _openssl-netscape-spki:
-
-NetscapeSPKI objects
---------------------
-
-.. autoclass:: NetscapeSPKI
-               :members:
-               :special-members:
-               :exclude-members: __weakref__
-
-.. _crl:
-
-CRL objects
------------
-
-.. autoclass:: CRL
-               :members:
-               :special-members:
-               :exclude-members: __weakref__
-
-.. _revoked:
-
-Revoked objects
----------------
-
-.. autoclass:: Revoked
-               :members:
 
 Exceptions
 ----------

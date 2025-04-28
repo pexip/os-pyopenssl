@@ -1,5 +1,5 @@
 0001-disable-test_set_default_verify_paths-since-it-tries.patch
-0002-pass-PYTHONPATH-when-building-HTML-doc.patch
+0003-Fix-running-tests-on-32-bit-time_t-platforms.patch
 openssl3.patch
 pfs_methods.patch
 seclevel.patch
