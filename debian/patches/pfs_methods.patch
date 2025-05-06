@@ -68,6 +68,6 @@
 +        res = _lib.SSL_CTX_set1_curves(self._context, curves, 1)
 +        _openssl_assert(res == 1)
 +
-     @_requires_alpn
-     def set_alpn_protos(self, protos):
+     def set_alpn_protos(self, protos: list[bytes]) -> None:
          """
+         Specify the protocols that the client is prepared to speak after the

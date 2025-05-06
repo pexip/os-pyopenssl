@@ -24,6 +24,6 @@ index e71b044..7e7d11f 100644
 +        """
 +        _lib.SSL_CTX_set_security_level(self._context, level)
 +
-     def load_verify_locations(self, cafile, capath=None):
-         """
-         Let SSL know where we can find trusted certificates for the certificate
+     def load_verify_locations(
+         self,
+         cafile: _StrOrBytesPath | None,

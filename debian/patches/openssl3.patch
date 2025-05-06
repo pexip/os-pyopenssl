@@ -2,7 +2,7 @@ diff --git a/src/OpenSSL/SSL.py b/src/OpenSSL/SSL.py
 index e71b044..b265a9d 100644
 --- a/src/OpenSSL/SSL.py
 +++ b/src/OpenSSL/SSL.py
-@@ -1183,9 +1183,17 @@ class Context(object):
+@@ -1383,9 +1383,17 @@ class Context(object):
              _raise_current_error()
          bio = _ffi.gc(bio, _lib.BIO_free)
  
@@ -22,29 +22,47 @@ index e71b044..b265a9d 100644
 +            res = _lib.SSL_CTX_set_tmp_dh(self._context, dh)
          _openssl_assert(res == 1)
  
-     def set_tmp_ecdh(self, curve):
-@@ -1199,7 +1207,11 @@ class Context(object):
+     def set_tmp_ecdh(self, curve: _EllipticCurve | ec.EllipticCurve) -> None:
+@@ -1411,7 +1419,11 @@ class Context(object):
+                 DeprecationWarning,
+                 stacklevel=2,
+             )
+-            _lib.SSL_CTX_set_tmp_ecdh(self._context, curve._to_EC_KEY())
++            if _lib.CRYPTOGRAPHY_OPENSSL_300_OR_GREATER:
++                nid = _ffi.new("int *", curve._nid)
++                _lib.SSL_CTX_set1_curves(self._context, nid, 1)
++            else:
++                _lib.SSL_CTX_set_tmp_ecdh(self._context, curve._to_EC_KEY())
+         else:
+             name = curve.name
+             if name == "secp192r1":
+@@ -1422,10 +1434,13 @@ clas Context(object):
+             if nid == _lib.NID_undef:
+                 _raise_current_error()
  
-         :return: None
-         """
--        _lib.SSL_CTX_set_tmp_ecdh(self._context, curve._to_EC_KEY())
-+        if _lib.CRYPTOGRAPHY_OPENSSL_300_OR_GREATER:
-+            nid = _ffi.new("int *", curve._nid)
-+            _lib.SSL_CTX_set1_curves(self._context, nid, 1)
-+        else:
-+            _lib.SSL_CTX_set_tmp_ecdh(self._context, curve._to_EC_KEY())
++            if _lib.CRYPTOGRAPHY_OPENSSL_300_OR_GREATER:
++                _lib.SSL_CTX_set1_curves(self._context, nid, 1)
++            else:
+-            ec = _lib.EC_KEY_new_by_curve_name(nid)
+-            _openssl_assert(ec != _ffi.NULL)
+-            ec = _ffi.gc(ec, _lib.EC_KEY_free)
+-            _lib.SSL_CTX_set_tmp_ecdh(self._context, ec)
++                ec = _lib.EC_KEY_new_by_curve_name(nid)
++                _openssl_assert(ec != _ffi.NULL)
++                ec = _ffi.gc(ec, _lib.EC_KEY_free)
++                _lib.SSL_CTX_set_tmp_ecdh(self._context, ec)
  
-     def set_cipher_list(self, cipher_list):
+     def set_cipher_list(self, cipher_list: bytes) -> None:
          """
-@@ -2395,7 +2407,7 @@ class Connection(object):
+@@ -2756,7 +2781,7 @@ class Connection(object):
  
          :return: The peer's certificate
          """
 -        cert = _lib.SSL_get_peer_certificate(self._ssl)
 +        cert = _lib.SSL_get1_peer_certificate(self._ssl)
          if cert != _ffi.NULL:
-             return X509._from_raw_x509_ptr(cert)
-         return None
+             pycert = X509._from_raw_x509_ptr(cert)
+             if as_cryptography:
 diff --git a/src/OpenSSL/_util.py b/src/OpenSSL/_util.py
 index 53c0b9e..a2c81f1 100644
 --- a/src/OpenSSL/_util.py
@@ -88,7 +106,7 @@ index eda4af6..78e64c3 100644
 +
          if self._only_public:
              der = dump_publickey(FILETYPE_ASN1, self)
-             return load_der_public_key(der)
+             return typing.cast(_Key, load_der_public_key(der))
 @@ -358,35 +360,21 @@ class PKey(object):
              if bits <= 0:
                  raise ValueError("Invalid number of bits")
@@ -303,74 +321,12 @@ index eda4af6..78e64c3 100644
      else:
          raise ValueError(
              "type argument must be FILETYPE_PEM, FILETYPE_ASN1, or "
-@@ -2483,6 +2534,9 @@ class CRL(object):
-         :param PKey issuer_key: The issuer's private key.
-         :param bytes digest: The digest method to sign the CRL with.
-         """
-+        if not issuer_key._initialized:
-+            raise ValueError("PKey object not initialized")
-+
-         digest_obj = _lib.EVP_get_digestbyname(digest)
-         _openssl_assert(digest_obj != _ffi.NULL)
-         _lib.X509_CRL_set_issuer_name(
-@@ -2523,6 +2577,12 @@ class CRL(object):
-         if digest is _UNSPECIFIED:
-             raise TypeError("digest must be provided")
- 
-+        pkey = key._pkey
-+        if not key._initialized:
-+            pkey = _lib.EVP_PKEY_new()
-+            _openssl_assert(pkey != _ffi.NULL)
-+            pkey = _ffi.gc(pkey, _lib.EVP_PKEY_free)
-+
-         digest_obj = _lib.EVP_get_digestbyname(digest)
-         if digest_obj == _ffi.NULL:
-             raise ValueError("No such digest method")
-@@ -2548,7 +2608,7 @@ class CRL(object):
-         )
-         _openssl_assert(ret == 1)
- 
--        sign_result = _lib.X509_CRL_sign(self._crl, key._pkey, digest_obj)
-+        sign_result = _lib.X509_CRL_sign(self._crl, pkey, digest_obj)
-         if not sign_result:
-             _raise_current_error()
- 
-@@ -2837,6 +2897,9 @@ class NetscapeSPKI(object):
-         :raises OpenSSL.crypto.Error: If the signature is invalid, or there was
-             a problem verifying the signature.
-         """
-+        if not key._initialized:
-+            raise ValueError("PKey object not initialized")
-+
-         answer = _lib.NETSCAPE_SPKI_verify(self._spki, key._pkey)
-         if answer <= 0:
-             _raise_current_error()
-@@ -2875,6 +2938,9 @@ class NetscapeSPKI(object):
-         :param pkey: The public key
-         :return: ``None``
-         """
-+        if not pkey._initialized:
-+            raise ValueError("PKey object not initialized")
-+
-         set_result = _lib.NETSCAPE_SPKI_set_pubkey(self._spki, pkey._pkey)
-         _openssl_assert(set_result == 1)
- 
-@@ -3102,6 +3168,9 @@ def sign(pkey, data, digest):
-     """
-     data = _text_to_bytes_and_warn("data", data)
- 
-+    if not pkey._initialized:
-+        raise ValueError("PKey object not initialized")
-+
-     digest_obj = _lib.EVP_get_digestbyname(_byte_string(digest))
-     if digest_obj == _ffi.NULL:
-         raise ValueError("No such digest method")
 diff --git a/tests/test_crypto.py b/tests/test_crypto.py
 index ef3429d..eaf17da 100644
 --- a/tests/test_crypto.py
 +++ b/tests/test_crypto.py
 @@ -70,7 +70,7 @@ def normalize_privatekey_pem(pem):
-     return dump_privatekey(FILETYPE_PEM, load_privatekey(FILETYPE_PEM, pem))
+     return datetime.now(timezone.utc).replace(tzinfo=None)
  
  
 -GOOD_CIPHER = "blowfish"
@@ -397,8 +353,8 @@ index ef3429d..eaf17da 100644
          generate new keys.
          """
          key = PKey()
--        for type, bits in [(TYPE_RSA, 512), (TYPE_DSA, 576)]:
-+        for type, bits in [(TYPE_RSA, 512), (TYPE_DSA, 1024)]:
+-        for type, bits in [(TYPE_RSA, 2048), (TYPE_DSA, 576)]:
++        for type, bits in [(TYPE_RSA, 2048), (TYPE_DSA, 1024)]:
              key.generate_key(type, bits)
              assert key.type() == type
              assert key.bits() == bits
@@ -423,43 +379,29 @@ index ef3429d..eaf17da 100644
 +            curve._to_EC_KEY()
  
  
- class EllipticCurveFactory:
+ class TestEllipticCurveEquality:
 diff --git a/tests/test_ssl.py b/tests/test_ssl.py
 index e604164..b5f7c78 100644
 --- a/tests/test_ssl.py
 +++ b/tests/test_ssl.py
-@@ -100,6 +100,7 @@ from OpenSSL.SSL import (
-     TLS1_1_VERSION,
+@@ -103,6 +103,7 @@ from OpenSSL.SSL import (
+     SSLEAY_VERSION,
      TLS1_2_VERSION,
      TLS1_3_VERSION,
 +    TLS1_VERSION,
      TLS_METHOD,
-     TLSv1_1_METHOD,
-     TLSv1_2_METHOD,
-@@ -593,11 +594,11 @@ class TestContext(object):
+     VERIFY_CLIENT_ONCE,
+     VERIFY_FAIL_IF_NO_PEER_CERT,
+@@ -613,7 +614,7 @@ class TestContext(object):
          `SSLv3_METHOD`, `SSLv23_METHOD`, `TLSv1_METHOD`, `TLSv1_1_METHOD`,
          or `TLSv1_2_METHOD`.
          """
--        methods = [SSLv23_METHOD, TLSv1_METHOD]
-+        methods = [SSLv23_METHOD, TLS_METHOD]
+-        methods = [SSLv23_METHOD, TLSv1_METHOD, TLSv1_1_METHOD, TLSv1_2_METHOD]
++        methods = [SSLv23_METHOD, TLS_METHOD, TLSv1_1_METHOD, TLSv1_2_METHOD]
          for meth in methods:
              Context(meth)
  
--        maybe = [TLSv1_1_METHOD, TLSv1_2_METHOD]
-+        maybe = [TLSv1_METHOD, TLSv1_1_METHOD, TLSv1_2_METHOD]
-         for meth in maybe:
-             try:
-                 Context(meth)
-@@ -623,7 +624,7 @@ class TestContext(object):
-         """
-         `Context` can be used to create instances of that type.
-         """
--        assert is_consistent_type(Context, "Context", TLSv1_METHOD)
-+        assert is_consistent_type(Context, "Context", TLS_METHOD)
- 
-     def test_use_privatekey_file_missing(self, tmpfile):
-         """
-@@ -848,7 +949,7 @@ class TestContext(object):
+@@ -866,7 +867,7 @@ class TestContext(object):
          """
          key = PKey()
          key.generate_key(TYPE_RSA, 1024)
@@ -468,8 +410,8 @@ index e604164..b5f7c78 100644
          with open(tmpfile, "w") as fObj:
              fObj.write(pem.decode("ascii"))
          return tmpfile
-@@ -1001,7 +1002,8 @@ class TestContext(object):
-         def keylog(conn, line):
+@@ -1027,7 +1028,8 @@ class TestContext(object):
+         def keylog(conn: Connection, line: bytes) -> None:
              called.append((conn, line))
  
 -        server_context = Context(TLSv1_2_METHOD)
@@ -478,7 +420,7 @@ index e604164..b5f7c78 100644
          server_context.set_keylog_callback(keylog)
          server_context.use_certificate(
              load_certificate(FILETYPE_PEM, root_cert_pem)
-@@ -1361,7 +1363,8 @@ class TestContext(object):
+@@ -1447,7 +1449,8 @@ class TestContext(object):
          exception, verification fails and the exception is propagated to the
          caller of `Connection.do_handshake`.
          """
@@ -488,7 +430,7 @@ index e604164..b5f7c78 100644
          serverContext.use_privatekey(
              load_privatekey(FILETYPE_PEM, root_key_pem)
          )
-@@ -1369,7 +1372,8 @@ class TestContext(object):
+@@ -1455,7 +1458,8 @@ class TestContext(object):
              load_certificate(FILETYPE_PEM, root_cert_pem)
          )
  
@@ -496,9 +438,9 @@ index e604164..b5f7c78 100644
 +        clientContext = Context(TLS_METHOD)
 +        clientContext.set_max_proto_version(TLS1_2_VERSION)
  
-         def verify_callback(*args):
-             raise Exception("silly verify failure")
-@@ -1387,7 +1391,8 @@ class TestContext(object):
+         def verify_callback(
+             conn: Connection, cert: X509, err: int, depth: int, ok: int
+@@ -1475,7 +1479,8 @@ class TestContext(object):
          times, the pointers to the old call functions should not be dangling
          and trigger a segfault.
          """
@@ -508,7 +450,7 @@ index e604164..b5f7c78 100644
          serverContext.use_privatekey(
              load_privatekey(FILETYPE_PEM, root_key_pem)
          )
-@@ -1395,7 +1400,8 @@ class TestContext(object):
+@@ -1483,7 +1488,8 @@ class TestContext(object):
              load_certificate(FILETYPE_PEM, root_cert_pem)
          )
  
@@ -518,7 +460,7 @@ index e604164..b5f7c78 100644
  
          clients = []
  
-@@ -1431,7 +1437,8 @@ class TestContext(object):
+@@ -1519,7 +1525,8 @@ class TestContext(object):
          """
          If the verify callback is omitted, the preverify value is used.
          """
@@ -528,7 +470,7 @@ index e604164..b5f7c78 100644
          serverContext.use_privatekey(
              load_privatekey(FILETYPE_PEM, root_key_pem)
          )
-@@ -1439,7 +1446,8 @@ class TestContext(object):
+@@ -1527,7 +1534,8 @@ class TestContext(object):
              load_certificate(FILETYPE_PEM, root_cert_pem)
          )
  
@@ -538,7 +480,7 @@ index e604164..b5f7c78 100644
          clientContext.set_verify(mode, None)
  
          if mode == SSL.VERIFY_PEER:
-@@ -2745,7 +2753,8 @@ class TestConnection(object):
+@@ -2894,7 +2902,8 @@ class TestConnection(object):
          """
          key = load_privatekey(FILETYPE_PEM, server_key_pem)
          cert = load_certificate(FILETYPE_PEM, server_cert_pem)
@@ -547,8 +489,8 @@ index e604164..b5f7c78 100644
 +        ctx.set_max_proto_version(TLS1_2_VERSION)
          ctx.use_privatekey(key)
          ctx.use_certificate(cert)
-         ctx.set_session_id("unity-test")
-@@ -2781,12 +2790,13 @@ class TestConnection(object):
+         ctx.set_session_id(b"unity-test")
+@@ -2931,12 +2940,13 @@ class TestConnection(object):
          with a context using a different SSL method than the `Connection`
          is using, a `OpenSSL.SSL.Error` is raised.
          """
@@ -565,10 +507,10 @@ index e604164..b5f7c78 100644
          ctx.use_privatekey(key)
          ctx.use_certificate(cert)
          ctx.set_session_id(b"unity-test")
-@@ -2797,7 +2807,9 @@ class TestConnection(object):
+@@ -2947,7 +2957,9 @@ class TestConnection(object):
              return server
  
-         def makeOriginalClient(socket):
+         def makeOriginalClient(socket: socket) -> Connection:
 -            client = Connection(Context(v1), socket)
 +            cctx = Context(TLS_METHOD)
 +            cctx.set_max_proto_version(v1)
@@ -576,9 +518,9 @@ index e604164..b5f7c78 100644
              client.set_connect_state()
              return client
  
-@@ -2808,7 +2820,9 @@ class TestConnection(object):
+@@ -2959,7 +2971,9 @@ class TestConnection(object):
  
-         def makeClient(socket):
+         def makeClient(socket: socket) -> Connection:
              # Intentionally use a different, incompatible method here.
 -            client = Connection(Context(v2), socket)
 +            cctx = Context(TLS_METHOD)
@@ -587,7 +529,7 @@ index e604164..b5f7c78 100644
              client.set_connect_state()
              client.set_session(originalSession)
              return client
-@@ -3378,10 +3392,23 @@ class TestConnectionRenegotiate(object):
+@@ -3538,10 +3552,23 @@ class TestConnectionRenegotiate(object):
          """
          Go through a complete renegotiation cycle.
          """
