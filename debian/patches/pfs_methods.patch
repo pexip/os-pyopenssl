@@ -1,8 +1,8 @@
 --- a/src/OpenSSL/SSL.py
 +++ b/src/OpenSSL/SSL.py
-@@ -1425,6 +1425,70 @@
-             _lib.SSL_CTX_set_tlsext_use_srtp(self._context, profiles) == 0
-         )
+@@ -3153,6 +3153,70 @@
+         version = _lib.SSL_version(self._ssl)
+         return version
  
 +    def set_tmp_dh_from_pem(self, pem):
 +        """
@@ -70,4 +70,4 @@
 +
      def set_alpn_protos(self, protos: list[bytes]) -> None:
          """
-         Specify the protocols that the client is prepared to speak after the
+         Specify the client's ALPN protocol list.
