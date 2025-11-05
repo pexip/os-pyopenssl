@@ -2,7 +2,7 @@ diff --git a/src/OpenSSL/SSL.py b/src/OpenSSL/SSL.py
 index e71b044..7e7d11f 100644
 --- a/src/OpenSSL/SSL.py
 +++ b/src/OpenSSL/SSL.py
-@@ -719,6 +719,24 @@ class Context(object):
+@@ -947,6 +947,25 @@ def set_max_proto_version(self, version: int) -> None:
              _lib.SSL_CTX_set_max_proto_version(self._context, version) == 1
          )
  
@@ -15,6 +15,7 @@ index e71b044..7e7d11f 100644
 +        """
 +        return _lib.SSL_CTX_get_security_level(self._context)
 +
++    @_require_not_used
 +    def set_security_level(self, level):
 +        """
 +        Set the security level of this context.
@@ -24,6 +25,6 @@ index e71b044..7e7d11f 100644
 +        """
 +        _lib.SSL_CTX_set_security_level(self._context, level)
 +
+     @_require_not_used
      def load_verify_locations(
          self,
-         cafile: _StrOrBytesPath | None,
