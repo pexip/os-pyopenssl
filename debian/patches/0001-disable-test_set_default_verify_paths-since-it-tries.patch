@@ -7,10 +7,10 @@ Subject: disable test_set requiring network access
  1 file changed, 1 insertion(+)
 
 diff --git a/tests/test_ssl.py b/tests/test_ssl.py
-index 7127477..21d30cf 100644
+index bcad6d9..f67432e 100644
 --- a/tests/test_ssl.py
 +++ b/tests/test_ssl.py
-@@ -1315,6 +1315,7 @@ class TestContext:
+@@ -1309,6 +1309,7 @@ class TestContext:
          # internet which has such a certificate.  Connecting to the network
          # in a unit test is bad, but it's the only way I can think of to
          # really test this. -exarkun

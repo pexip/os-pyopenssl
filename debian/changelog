@@ -1,3 +1,19 @@
+pyopenssl (25.1.0-2) unstable; urgency=medium
+
+  * Fix the maximum supported version of python3-cryptography.
+  * Drop the Priority field.
+
+ -- Andrey Rakhmatullin <wrar@debian.org>  Thu, 30 Oct 2025 17:18:11 +0500
+
+pyopenssl (25.1.0-1) unstable; urgency=medium
+
+  * New upstream version.
+  * Use local intersphinx files.
+  * Drop Rules-Requires-Root.
+  * Bump Standards-Version to 4.7.2.
+
+ -- Andrey Rakhmatullin <wrar@debian.org>  Sat, 09 Aug 2025 15:42:58 +0500
+
 pyopenssl (25.0.0-1+pexip25u1) pexip-trixie; urgency=medium
 
   * Initial trixie build

@@ -1,0 +1,42 @@
+From: Andrey Rakhmatullin <wrar@debian.org>
+Date: Sat, 9 Aug 2025 15:35:40 +0500
+Subject: Use local intersphinx files.
+
+---
+ doc/conf.py | 26 ++++++++++++++++++++++----
+ 1 file changed, 22 insertions(+), 4 deletions(-)
+
+diff --git a/doc/conf.py b/doc/conf.py
+index aa83ac8..edd41c9 100644
+--- a/doc/conf.py
++++ b/doc/conf.py
+@@ -249,7 +249,25 @@ latex_documents = [
+ # (source start file, name, description, authors, manual section).
+ man_pages = [("index", "pyopenssl", "pyOpenSSL Documentation", [authors], 1)]
+ 
+-intersphinx_mapping = {
+-    "python": ("https://docs.python.org/3", None),
+-    "cryptography": ("https://cryptography.io/en/latest/", None),
+-}
++
++def check_object_path(key, url, path):
++    if os.path.isfile(path):
++        return {key: (url, path)}
++    return {}
++
++
++intersphinx_mapping = {}
++intersphinx_mapping.update(
++    check_object_path(
++        "cryptography",
++        "https://cryptography.io/en/latest/",
++        "/usr/share/doc/python-cryptography-doc/html/objects.inv",
++    )
++)
++intersphinx_mapping.update(
++    check_object_path(
++        "python",
++        "https://docs.python.org/3",
++        "/usr/share/doc/python%d.%d/html/objects.inv" % sys.version_info[:2],
++    )
++)
