@@ -5,6 +5,7 @@ pyopenssl (25.3.0-0+pexip25u1) pexip-trixie; urgency=medium
   * Import 25.3.0 from pypi
   * d/control: update cryptography version range
   * d/p/pfs_methods.patch: refresh
+  * d/p/openssl3.patch: refresh
 
  -- Huw Jones <huw@pexip.com>  Wed, 05 Nov 2025 11:05:51 +0000
 
