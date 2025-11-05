@@ -1,3 +1,9 @@
+pyopenssl (25.1.0-2+pexip25u1) pexip-trixie; urgency=medium
+
+  * New upstream release
+
+ -- Huw Jones <huw@pexip.com>  Wed, 05 Nov 2025 11:05:51 +0000
+
 pyopenssl (25.1.0-2) unstable; urgency=medium
 
   * Fix the maximum supported version of python3-cryptography.
