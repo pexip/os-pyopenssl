@@ -4,6 +4,25 @@ Changelog
 Versions are year-based with a strict backward-compatibility policy.
 The third digit is only for regressions.
 
+25.1.0 (2025-05-17)
+-------------------
+
+Backward-incompatible changes:
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Deprecations:
+^^^^^^^^^^^^^
+
+- Attempting using any methods that mutate an ``OpenSSL.SSL.Context`` after it
+  has been used to create an ``OpenSSL.SSL.Connection`` will emit a warning. In
+  a future release, this will raise an exception.
+
+Changes:
+^^^^^^^^
+
+* ``cryptography`` maximum version has been increased to 45.0.x.
+
+
 25.0.0 (2025-01-12)
 -------------------
 
