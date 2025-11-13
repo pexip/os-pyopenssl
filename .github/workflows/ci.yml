@@ -5,62 +5,59 @@ on:
 
 jobs:
   linux:
-    runs-on: ${{ matrix.PYTHON.OS || 'ubuntu-22.04' }}
+    runs-on: ${{ matrix.PYTHON.OS || 'ubuntu-latest' }}
     strategy:
       fail-fast: false
       matrix:
         PYTHON:
           # Base builds
-          - {VERSION: "3.7", TOXENV: "py37"}
-          - {VERSION: "3.8", TOXENV: "py38"}
-          - {VERSION: "3.9", TOXENV: "py39"}
-          - {VERSION: "3.10", TOXENV: "py310"}
-          - {VERSION: "3.11", TOXENV: "py311"}
-          - {VERSION: "3.12", TOXENV: "py312"}
-          - {VERSION: "3.13-dev", TOXENV: "py313"}
-          - {VERSION: "pypy-3.9", TOXENV: "pypy3"}
-          - {VERSION: "pypy-3.10", TOXENV: "pypy3"}
-          - {VERSION: "3.11", TOXENV: "py311-useWheel", OS: "windows-2022" }
-          # -cryptographyMain
-          - {VERSION: "3.7", TOXENV: "py37-cryptographyMain"}
-          - {VERSION: "3.8", TOXENV: "py38-cryptographyMain"}
-          - {VERSION: "3.9", TOXENV: "py39-cryptographyMain"}
-          - {VERSION: "3.10", TOXENV: "py310-cryptographyMain"}
-          - {VERSION: "3.11", TOXENV: "py311-cryptographyMain"}
-          - {VERSION: "3.12", TOXENV: "py312-cryptographyMain"}
-          - {VERSION: "3.13-dev", TOXENV: "py313-cryptographyMain"}
-          - {VERSION: "pypy-3.9", TOXENV: "pypy3-cryptographyMain"}
-          - {VERSION: "pypy-3.10", TOXENV: "pypy3-cryptographyMain"}
-          # -cryptographyMinimum
-          - {VERSION: "3.7", TOXENV: "py37-cryptographyMinimum"}
-          - {VERSION: "3.8", TOXENV: "py38-cryptographyMinimum"}
-          - {VERSION: "3.9", TOXENV: "py39-cryptographyMinimum"}
-          - {VERSION: "3.10", TOXENV: "py310-cryptographyMinimum"}
-          - {VERSION: "3.11", TOXENV: "py311-cryptographyMinimum"}
-          - {VERSION: "3.12", TOXENV: "py312-cryptographyMinimum"}
-          - {VERSION: "3.13-dev", TOXENV: "py313-cryptographyMinimum"}
-          - {VERSION: "pypy-3.10", TOXENV: "pypy3-cryptographyMinimum"}
+          - {VERSION: "3.7", NOXSESSION: "tests", OS: "ubuntu-22.04"}
+          - {VERSION: "3.8", NOXSESSION: "tests"}
+          - {VERSION: "3.9", NOXSESSION: "tests"}
+          - {VERSION: "3.10", NOXSESSION: "tests"}
+          - {VERSION: "3.11", NOXSESSION: "tests"}
+          - {VERSION: "3.12", NOXSESSION: "tests"}
+          - {VERSION: "3.13", NOXSESSION: "tests"}
+          - {VERSION: "3.14-dev", NOXSESSION: "tests"}
+          - {VERSION: "pypy-3.11", NOXSESSION: "tests"}
+          - {VERSION: "3.11", NOXSESSION: "tests-wheel", OS: "windows-latest"}
+          # -cryptography-main
+          - {VERSION: "3.8", NOXSESSION: "tests-cryptography-main"}
+          - {VERSION: "3.9", NOXSESSION: "tests-cryptography-main"}
+          - {VERSION: "3.10", NOXSESSION: "tests-cryptography-main"}
+          - {VERSION: "3.11", NOXSESSION: "tests-cryptography-main"}
+          - {VERSION: "3.12", NOXSESSION: "tests-cryptography-main"}
+          - {VERSION: "3.13", NOXSESSION: "tests-cryptography-main"}
+          - {VERSION: "pypy-3.11", NOXSESSION: "tests-cryptography-main"}
+          # -cryptography-minimum
+          - {VERSION: "3.7", NOXSESSION: "tests-cryptography-minimum", OS: "ubuntu-22.04"}
+          - {VERSION: "3.8", NOXSESSION: "tests-cryptography-minimum"}
+          - {VERSION: "3.9", NOXSESSION: "tests-cryptography-minimum"}
+          - {VERSION: "3.10", NOXSESSION: "tests-cryptography-minimum"}
+          - {VERSION: "3.11", NOXSESSION: "tests-cryptography-minimum"}
+          - {VERSION: "3.12", NOXSESSION: "tests-cryptography-minimum"}
+          - {VERSION: "3.13", NOXSESSION: "tests-cryptography-minimum"}
+          - {VERSION: "pypy-3.11", NOXSESSION: "tests-cryptography-minimum"}
           # Cryptography wheels
-          - {VERSION: "3.9", TOXENV: "py39-cryptographyMinimum-useWheel"}
-          - {VERSION: "3.9", TOXENV: "py39-useWheel"}
+          - {VERSION: "3.9", NOXSESSION: "tests-cryptography-minimum-wheel"}
+          - {VERSION: "3.9", NOXSESSION: "tests-wheel"}
           # Random order
-          - {VERSION: "3.9", TOXENV: "py39-randomorder"}
+          - {VERSION: "3.9", NOXSESSION: "tests-random-order"}
           # Meta
-          - {VERSION: "3.9", TOXENV: "check-manifest"}
-          - {VERSION: "3.11", TOXENV: "lint"}
-          - {VERSION: "3.13", TOXENV: "py313-mypy"}
-          - {VERSION: "3.9", TOXENV: "docs"}
-    name: "${{ matrix.PYTHON.TOXENV }}${{ matrix.PYTHON.OS && format(' on {0}', matrix.PYTHON.OS) || '' }}"
+          - {VERSION: "3.9", NOXSESSION: "check-manifest"}
+          - {VERSION: "3.11", NOXSESSION: "lint"}
+          - {VERSION: "3.13", NOXSESSION: "mypy"}
+          - {VERSION: "3.9", NOXSESSION: "docs"}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Setup python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.PYTHON.VERSION }}
-      - run: python -m pip install tox
-      - run: tox -v
+      - run: python -m pip install nox
+      - run: nox
         env:
-          TOXENV: ${{ matrix.PYTHON.TOXENV }}
+          NOXSESSION: ${{ matrix.PYTHON.NOXSESSION }}
       - uses: ./.github/actions/upload-coverage
 
   linux-docker:
@@ -70,16 +67,16 @@ jobs:
       fail-fast: false
       matrix:
         TEST:
-          # cryptographyMain used since there's no wheel
-          - {CONTAINER: "ubuntu-rolling", TOXENV: "py313-cryptographyMain"}
-    name: "${{ matrix.TEST.TOXENV }} on ${{ matrix.TEST.CONTAINER }}"
+          # cryptography-main used since there's no wheel
+          - {CONTAINER: "ubuntu-rolling", NOXSESSION: "tests-cryptography-main"}
+    name: "${{ matrix.TEST.NOXSESSION }} on ${{ matrix.TEST.CONTAINER }}"
     steps:
-      - uses: actions/checkout@v4
-      - run: /venv/bin/pip install tox
-      - run: /venv/bin/tox -v
+      - uses: actions/checkout@v5
+      - run: /venv/bin/pip install nox
+      - run: /venv/bin/nox
         env:
-          TOXENV: ${{ matrix.TEST.TOXENV }}
           RUSTUP_HOME: /root/.rustup
+          NOXSESSION: ${{ matrix.TEST.NOXSESSION }}
       - uses: ./.github/actions/upload-coverage
 
   linux-downstream:
@@ -95,9 +92,9 @@ jobs:
           - 3.12
     name: "Downstream tests for ${{ matrix.DOWNSTREAM }}"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Setup python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.PYTHON }}
       - run: ./.github/downstream.d/${{ matrix.DOWNSTREAM }}.sh install
@@ -115,18 +112,18 @@ jobs:
         with:
           jobs: ${{ toJSON(needs) }}
 
-      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         timeout-minutes: 3
         with:
           persist-credentials: false
       - name: Setup python
-        uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f # v5.1.1
+        uses: actions/setup-python@e797f83bcb11b83ae66e0230d6156d7c80228e7c # v6.0.0
         with:
           python-version: '3.12'
         timeout-minutes: 3
       - run: pip install coverage[toml]
       - name: Download coverage data
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
         with:
           pattern: coverage-data-*
           merge-multiple: true

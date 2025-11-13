@@ -1,3 +1,10 @@
+pyopenssl (25.3.0-1) unstable; urgency=medium
+
+  * New upstream version.
+  * Migrate to pybuild-plugin-pyproject.
+
+ -- Andrey Rakhmatullin <wrar@debian.org>  Fri, 14 Nov 2025 01:50:45 +0500
+
 pyopenssl (25.1.0-2) unstable; urgency=medium
 
   * Fix the maximum supported version of python3-cryptography.
