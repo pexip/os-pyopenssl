@@ -1,8 +1,8 @@
---- a/src/OpenSSL/SSL.py
-+++ b/src/OpenSSL/SSL.py
-@@ -3153,6 +3153,70 @@
-         version = _lib.SSL_version(self._ssl)
-         return version
+--- pyopenssl.orig/src/OpenSSL/SSL.py
++++ pyopenssl/src/OpenSSL/SSL.py
+@@ -1924,6 +1924,71 @@ class Context:
+             self._cookie_verify_helper.callback,
+         )
  
 +    def set_tmp_dh_from_pem(self, pem):
 +        """
@@ -68,6 +68,7 @@
 +        res = _lib.SSL_CTX_set1_curves(self._context, curves, 1)
 +        _openssl_assert(res == 1)
 +
-     def set_alpn_protos(self, protos: list[bytes]) -> None:
-         """
-         Specify the client's ALPN protocol list.
++
+ 
+ class Connection:
+     _reverse_mapping: typing.MutableMapping[Any, Connection] = (
