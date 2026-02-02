@@ -1,3 +1,9 @@
+pyopenssl (25.3.0-0+pexip25u4) pexip-trixie; urgency=medium
+
+  * d/p/pfs_methods: remove broken set_tmp_ecdh_from_pem
+
+ -- Huw Jones <huw@pexip.com>  Mon, 02 Feb 2026 11:11:07 +0000
+
 pyopenssl (25.3.0-0+pexip25u3) pexip-trixie; urgency=medium
 
   * Fix context of pfs_methods.patch

@@ -1,6 +1,6 @@
 --- pyopenssl.orig/src/OpenSSL/SSL.py
 +++ pyopenssl/src/OpenSSL/SSL.py
-@@ -1924,6 +1924,71 @@ class Context:
+@@ -1924,6 +1924,33 @@ class Context:
              self._cookie_verify_helper.callback,
          )
  
@@ -28,44 +28,6 @@
 +        res = _lib.SSL_CTX_set0_tmp_dh_pkey(self._context, pkey)
 +        if res != 1:
 +            _lib.EVP_PKEY_free(pkey)
-+        _openssl_assert(res == 1)
-+
-+    def set_tmp_ecdh_from_pem(self, pem):
-+        """
-+        Set ECDH parameters from PEM-encoded data
-+
-+        :param pem: String containing PEM-encoded ECDH parameters.
-+        :return: None
-+        """
-+        if not isinstance(pem, bytes):
-+            raise TypeError("pem must be a byte string")
-+
-+        bio = _lib.BIO_new(_lib.BIO_s_mem())
-+        if bio == _ffi.NULL:
-+            _raise_current_error()
-+        bio = _ffi.gc(bio, _lib.BIO_free)
-+
-+        result = _lib.BIO_write(bio, pem, len(pem))
-+        if result <= 0:
-+            _raise_current_error()
-+
-+        pkey = _lib.PEM_read_bio_Parameters(bio, _ffi.NULL)
-+        _openssl_assert(pkey != _ffi.NULL)
-+        pkey = _ffi.gc(pkey, _lib.EVP_PKEY_free)
-+
-+        buflen = _ffi.new("size_t *")
-+        res = _lib.EVP_PKEY_get_group_name(pkey, _ffi.NULL, 0, buflen)
-+        _openssl_assert(res == 1)
-+
-+        buf = _ffi.new("unsigned char[]", buflen[0] + 1)
-+        res = _lib.EVP_PKEY_get_group_name(pkey, buf, buflen[0] + 1, buflen)
-+        _openssl_assert(res == 1)
-+
-+        nid = _lib.OBJ_sn2nid(buf)
-+        _openssl_assert(nid != 0)
-+
-+        curves = _ffi.new("int *", nid)
-+        res = _lib.SSL_CTX_set1_curves(self._context, curves, 1)
 +        _openssl_assert(res == 1)
 +
 +
