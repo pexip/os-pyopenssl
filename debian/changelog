@@ -1,3 +1,10 @@
+pyopenssl (25.3.0-1) unstable; urgency=medium
+
+  * New upstream version.
+  * Migrate to pybuild-plugin-pyproject.
+
+ -- Andrey Rakhmatullin <wrar@debian.org>  Fri, 14 Nov 2025 01:50:45 +0500
+
 pyopenssl (25.3.0-0+pexip25u4) pexip-trixie; urgency=medium
 
   * d/p/pfs_methods: remove broken set_tmp_ecdh_from_pem
