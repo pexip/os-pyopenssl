@@ -1,0 +1,24 @@
+From: Sebastian Andrzej Siewior <sebastian@breakpoint.cc>
+Date: Wed, 11 Mar 2026 22:47:09 +0100
+Subject: test_ssl: Skip test_client_receives_servers_data
+
+The OCSP response must not be a string.
+See https://github.com/openssl/openssl/issues/30379
+
+Signed-off-by: Sebastian Andrzej Siewior <sebastian@breakpoint.cc>
+---
+ tests/test_ssl.py | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/tests/test_ssl.py b/tests/test_ssl.py
+index 70c1de5..6362c02 100644
+--- a/tests/test_ssl.py
++++ b/tests/test_ssl.py
+@@ -4618,6 +4618,7 @@ class TestOCSP:
+         assert len(called) == 1
+         assert called[0] == b""
+ 
++    @pytest.mark.skip(reason="OCSP data must not be a string")
+     def test_client_receives_servers_data(self) -> None:
+         """
+         The data the server sends in its callback is received by the client.
