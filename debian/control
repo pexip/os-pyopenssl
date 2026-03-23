@@ -13,7 +13,7 @@ Build-Depends: ca-certificates <!nocheck>,
                python3-all,
                python3-cffi <!nocheck>,
                python3-cryptography (<< 47),
-               python3-cryptography (>= 45.0.7),
+               python3-cryptography (>= 46.0.0),
                python3-doc <!nodoc>,
                python3-pretend <!nocheck>,
                python3-pytest <!nocheck>,
@@ -21,7 +21,7 @@ Build-Depends: ca-certificates <!nocheck>,
                python3-setuptools,
                python3-sphinx <!nodoc>,
                python3-sphinx-rtd-theme <!nodoc>,
-Standards-Version: 4.7.2
+Standards-Version: 4.7.3
 Homepage: https://pyopenssl.org/
 Vcs-Git: https://salsa.debian.org/python-team/packages/pyopenssl.git
 Vcs-Browser: https://salsa.debian.org/python-team/packages/pyopenssl
@@ -31,6 +31,7 @@ XS-Pexip-Upstream: http://deb.debian.org/debian/ forky
 Package: python-openssl-doc
 Section: doc
 Architecture: all
+Multi-Arch: foreign
 Depends: ${misc:Depends},
          ${sphinxdoc:Depends},
 Built-Using: ${sphinxdoc:Built-Using}

@@ -1,3 +1,18 @@
+pyopenssl (26.0.0-1) unstable; urgency=medium
+
+  * New upstream version.
+
+ -- Andrey Rakhmatullin <wrar@debian.org>  Tue, 17 Mar 2026 22:58:07 +0500
+
+pyopenssl (25.3.0-2) unstable; urgency=medium
+
+  * Skip test_client_receives_servers_data that fails with openssl 3.6, patch
+    from Sebastian Andrzej Siewior (Closes: #1130440).
+  * Bump Standards-Version to 4.7.3.
+  * Add Multi-Arch: foreign to python-openssl-doc.
+
+ -- Andrey Rakhmatullin <wrar@debian.org>  Fri, 13 Mar 2026 12:29:22 +0500
+
 pyopenssl (25.3.0-1+pexip25u1) pexip-trixie; urgency=medium
 
   * New upstream release

@@ -1,6 +1,7 @@
 0001-disable-test_set_default_verify_paths-since-it-tries.patch
 0003-Fix-running-tests-on-32-bit-time_t-platforms.patch
 0003-Use-local-intersphinx-files.patch
+0004-test_ssl-Skip-test_client_receives_servers_data.patch
 pfs_methods.patch
 seclevel.patch
 openssl3.patch
