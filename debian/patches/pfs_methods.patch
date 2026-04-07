@@ -1,3 +1,5 @@
+Add methods to set (EC)DH parameters from PEM data
+
 --- pyopenssl.orig/src/OpenSSL/SSL.py
 +++ pyopenssl/src/OpenSSL/SSL.py
 @@ -1924,6 +1924,33 @@ class Context:

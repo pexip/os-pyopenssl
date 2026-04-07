@@ -1,3 +1,5 @@
+Expose security level settings
+
 diff --git a/src/OpenSSL/SSL.py b/src/OpenSSL/SSL.py
 index e71b044..7e7d11f 100644
 --- a/src/OpenSSL/SSL.py

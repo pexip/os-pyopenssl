@@ -1,3 +1,5 @@
+Replace use of old APIs which are deprecated in OpenSSL 3
+
 diff --git a/src/OpenSSL/SSL.py b/src/OpenSSL/SSL.py
 index e71b044..b265a9d 100644
 --- a/src/OpenSSL/SSL.py
